@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/qgisbrowser" >
+        <file alias="mActionAddLayer.png">images/mActionAddLayer.png</file>
+        <file alias="mActionPan.png">images/mActionPan.png</file>
+        <file alias="mActionZoomIn.png">images/mActionZoomIn.png</file>
+        <file alias="mActionZoomOut.png">images/mActionZoomOut.png</file>
+        <file alias="mActionZoomFullExtent.png">images/mActionZoomFullExtent.png</file>
+        <file alias="mActionMetadata.png">images/mActionMetadata.png</file>
+        <file alias="mActionOpenFolder.png">images/mActionOpenFolder.png</file>
+    </qresource>
+</RCC>
