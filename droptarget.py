@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-# Loosely based on:
-#   Original C++ Tutorial 2 by Tim Sutton, ported to Python by Martin Dobias
-#   with modifications and enhancements by Gary Sherman for FOSS4G2007
+# A simple drop target app for testing drag and drop
 # Licensed under the terms of GNU GPL 2
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
