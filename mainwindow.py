@@ -35,7 +35,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.setupUi(self)
 
     # Set the title for the app
-    self.setWindowTitle("QGIS Data Browser")
+    self.setWindowTitle("GeoNibble Data Browser")
 
     # create the widgets
     self.layout = QHBoxLayout(self.frame)
@@ -133,10 +133,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # Create the favorites/file management toolbar
     self.fileToolbar = self.addToolBar("File")
     self.historyCombo = QComboBox()
+    self.connect(self.historyCombo, SIGNAL("currentIndexChanged(const QString&)"), self.setFolder)
+    self.historyCombo.setMinimumWidth(180)
+    
     self.fileToolbar.addWidget(self.historyCombo)
 
     # set the default tree path
     self.treeview.setRootIndex(self.model.index(self.root));
+
+    #TODO: restore the history list from settings file
+    # add it to the drop down
+    if self.historyCombo.findText(self.root) == -1:
+      self.historyCombo.addItem(self.root)
     # resize the name column to contents
     self.treeview.resizeColumnToContents(0)
 
@@ -245,10 +253,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
   
   def openFolder(self):
     folder = QFileDialog.getExistingDirectory()
+    self.setFolder(folder)
+    
+  def setFolder(self, folder):
     self.treeview.setRootIndex(self.model.index(folder))
     self.statusBar().showMessage(folder)
     # set the column width to contents for the name
     self.treeview.resizeColumnToContents(0)
+    # add the folder to the drop-down list
+    if self.historyCombo.findText(folder) == -1:
+      self.historyCombo.addItem(folder)
+    
 
   def metadata(self):
     # show the metadata for the active layer
