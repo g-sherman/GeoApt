@@ -1,4 +1,5 @@
 #!/bin/sh
+# Run the geonibble data browser
 if [ -z "$1" ]
 then
   echo "Specify the full path to your QGIS 0.9 install"
