@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+# Sample directory view 
+# Copyright (C) 2008 Gary Sherman
+# Licensed under the GNU GPL Version 2
 
 # PyQt4 includes for python bindings to QT
 from PyQt4.QtCore import *

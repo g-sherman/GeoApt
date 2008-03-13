@@ -1,3 +1,6 @@
+# Tree view class for the data browser
+# Copyright (C) 2008 Gary Sherman
+# Licensed under the terms of GNU GPL 2
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 class QgsTreeView(QTreeView):
