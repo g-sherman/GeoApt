@@ -424,7 +424,8 @@ def main(argv):
   app = QApplication(argv)
 
   # Initialize qgis libraries
-  QgsApplication.setPrefixPath(qgis_prefix, True)
+  #QgsApplication.setPrefixPath(qgis_prefix, True)
+  QgsApplication.setPrefixPath(app.applicationDirPath(), True)
   QgsApplication.initQgis()
 
   # create main window

@@ -7,8 +7,14 @@ Usage:
 
 from setuptools import setup
 
-APP = ['./mainwindow.py']
-DATA_FILES = []
+APP = ['mainwindow.py']
+DATA_FILES = ['images/mActionAddLayer.png',
+ 'images/mActionMetadata.png',
+ 'images/mActionOpenFolder.png',
+ 'images/mActionPan.png',
+ 'images/mActionZoomFullExtent.png',
+ 'images/mActionZoomIn.png',
+ 'images/mActionZoomOut.png']
 OPTIONS = {'argv_emulation': True}
 
 setup(
