@@ -8,6 +8,6 @@ else
   export LD_LIBRARY_PATH=$QGISBASE/lib
   export PYTHONPATH=$PYTHONPATH:$QGISBASE/share/qgis/python 
   export QGISHOME=$QGISBASE
-  ./mainwindow.py
+  ./GeoNibble.py
 fi
 
