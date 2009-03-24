@@ -78,7 +78,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # Set the canvas background color to white 
     self.canvas.setCanvasColor(QColor(255,255,255))
     self.canvas.enableAntiAliasing(True)
-    self.canvas.useQImageToRender(True)
+    self.canvas.useImageToRender(True)
     self.canvas.setMinimumSize(400,400)
     #self.canvas.show()
 
@@ -268,8 +268,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # show the metadata for the active layer
     print "Layer type is: ", self.layer.type()
     print "dock viz is: ", self.dockVisibility
-    if(self.layer.type() == QgsMapLayer.RASTER): 
-      metadata = self.layer.getMetadata()
+    if(self.layer.type() == QgsMapLayer.RasterLayer): 
+      metadata = self.layer.metadata()
     else:
       metadata = self.getVectorMetadata()
     #print metadata
@@ -315,12 +315,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     #geom type
 
-    vectorType = self.layer.vectorType()
+    vectorType = self.layer.type()
 
     if ( vectorType < 0 or vectorType > QGis.Polygon ):
       print "Invalid vector type" 
     else:
-      vectorTypeString = self.vector_geometry_types[self.layer.vectorType()] 
+      vectorTypeString = self.vector_geometry_types[self.layer.type()] 
       myMetadataQString += "<tr><td bgcolor=\"white\">"
       myMetadataQString += "<b> Geometry type:</b> " + vectorTypeString
       myMetadataQString += "</td></tr>"
@@ -341,8 +341,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # extents in layer cs  TODO...maybe make a little nested table to improve layout...
     myMetadataQString += "<tr><td bgcolor=\"white\">"
     myMetadataQString += "<b>In layer SRS units:</b><br>xMin,yMin :" 
-    myMetadataQString += str(myExtent.xMin()) + ", " + str( myExtent.yMin()) + "<br>xMax,yMax :" 
-    myMetadataQString += str(myExtent.xMax()) + ", " + str(myExtent.yMax())
+    myMetadataQString += str(myExtent.xMinimum()) + ", " + str( myExtent.yMinimum()) + "<br>xMax,yMax :" 
+    myMetadataQString += str(myExtent.xMaximum()) + ", " + str(myExtent.yMaximum())
     myMetadataQString += "</td></tr>"
     # Add the info about each field in the attribute table
     myMetadataQString += "<tr><td bgcolor=\"lightgray\">"
@@ -369,7 +369,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     myMetadataQString += "</th>"
  
 #  //get info for each field by looping through them
-    myDataProvider = self.layer.getDataProvider()
+    myDataProvider = self.layer.dataProvider()
     myFields = myDataProvider.fields()
     for fld in myFields:
       print "fld is: " , fld
@@ -399,7 +399,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     myMetadataQString += "<b>Spatial Reference System:</b>"
     myMetadataQString += "</td></tr>";  
     myMetadataQString += "<tr><td bgcolor=\"white\">"
-    myMetadataQString += self.layer.srs().proj4String().replace(QRegExp("\"")," \"")
+    myMetadataQString += self.layer.srs().toProj4().replace(QRegExp("\"")," \"")
     myMetadataQString += "</td></tr>";
 
     myMetadataQString += "</td></tr>"; #end of stats container table row
@@ -424,8 +424,8 @@ def main(argv):
   app = QApplication(argv)
 
   # Initialize qgis libraries
-  #QgsApplication.setPrefixPath(qgis_prefix, True)
-  QgsApplication.setPrefixPath(app.applicationDirPath(), True)
+  QgsApplication.setPrefixPath(qgis_prefix, True)
+  #QgsApplication.setPrefixPath(app.applicationDirPath(), True)
   QgsApplication.initQgis()
 
   # create main window
