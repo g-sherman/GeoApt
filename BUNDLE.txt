@@ -1,5 +1,5 @@
 TO create the bundle:
-1. python setup.py py2app --includes QGIS,sip,PyQt4.QtXml
+1. python setup.py py2app --includes qgis,sip,PyQt4.QtXml
 2. Inside the bundle, create Contents/MacOS/lib/qgis
 3. Copy libqgis_core.dylib to lib
 4. Copy OGR provider to lib/qgis 
