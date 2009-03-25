@@ -82,8 +82,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.canvas.setMinimumSize(400,400)
     #self.canvas.show()
 
+    self.tabWidget = QTabWidget()
+    self.tabWidget.addTab(self.treeview, "Directories")
+    self.dataFrame = QFrame()
+    self.tabWidget.addTab(self.dataFrame, "Databases")
 
-    self.splitter.addWidget(self.treeview)
+    self.splitter.addWidget(self.tabWidget)
+
+
+    #self.splitter.addWidget(self.treeview)
     self.splitter.addWidget(self.canvas)
     #self.model.refresh
     #self.layout.addWidget(self.splitter)
