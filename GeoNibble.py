@@ -15,7 +15,7 @@ from mainwindow_ui import Ui_MainWindow
 # Import our resources (icons)
 import resources
 
-# Environment variable QGISHOME must be set to the 0.9 install directory
+# Environment variable QGISHOME must be set to the 1.0.x install directory
 # before running this application
 qgis_prefix = os.getenv("QGISHOME")
 
@@ -82,8 +82,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.canvas.setMinimumSize(400,400)
     #self.canvas.show()
 
+    self.tabWidget = QTabWidget()
+    self.tabWidget.addTab(self.treeview, "Directories")
+    self.dataFrame = QFrame()
+    self.tabWidget.addTab(self.dataFrame, "Databases")
 
-    self.splitter.addWidget(self.treeview)
+    self.splitter.addWidget(self.tabWidget)
+
+
+    #self.splitter.addWidget(self.treeview)
     self.splitter.addWidget(self.canvas)
     #self.model.refresh
     #self.layout.addWidget(self.splitter)
@@ -122,7 +129,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.toolbar.addAction(self.actionPan)
     self.toolbar.addAction(self.actionZoomFull)
     self.toolbar.addAction(self.actionMetadata)
-    self.toolbar.addAction(self.actionOpenFolder)
 
     # Create the map tools
     self.toolPan = QgsMapToolPan(self.canvas)
@@ -134,8 +140,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.historyCombo = QComboBox()
     self.connect(self.historyCombo, SIGNAL("currentIndexChanged(const QString&)"), self.setFolder)
     self.historyCombo.setMinimumWidth(180)
+    # label for the combo
+    self.historyLabel = QLabel()
+    self.historyLabel.setText('Directories:')
+    self.fileToolbar.addWidget(self.historyLabel)
     
     self.fileToolbar.addWidget(self.historyCombo)
+    self.fileToolbar.addAction(self.actionOpenFolder)
+
+    # Create the database management toolbar
+    self.databaseToolbar = self.addToolBar("Database")
+    self.databaseCombo = QComboBox()
+    self.connect(self.databaseCombo, SIGNAL("currentIndexChanged(const QString&)"), self.setDatabase)
+    self.databaseCombo.setMinimumWidth(180)
+    # label for the combo
+    self.databaseLabel = QLabel()
+    self.databaseLabel.setText('Databases:')
+    self.databaseToolbar.addWidget(self.databaseLabel)
+    self.databaseToolbar.addWidget(self.databaseCombo)
 
     # set the default tree path
     self.treeview.setRootIndex(self.model.index(self.root));
@@ -262,7 +284,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # add the folder to the drop-down list
     if self.historyCombo.findText(folder) == -1:
       self.historyCombo.addItem(folder)
-    
+
+  def setDatabase(self, database):
+      pass
 
   def metadata(self):
     # show the metadata for the active layer
