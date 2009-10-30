@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # Main window implementation for the data browser
-# Copyright (C) 2008 Gary Sherman
+# Copyright (C) 2009 Gary Sherman
 # Licensed under the terms of GNU GPL 2
-# 2008-03-11 added to git
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *

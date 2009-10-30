@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # A simple drop target app for testing drag and drop
-# Copyright (C) 2008 Gary Sherman 
+# Copyright (C) 2009 Gary Sherman 
 # Licensed under the terms of GNU GPL 2
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *

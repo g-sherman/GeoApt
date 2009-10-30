@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# Makefile for Geonibble - builds the UI and resource files
+# Copyright (C) 2009 Gary Sherman
+# Licensed under the terms of GNU GPL 2
+
 all: mainwindow_ui.py resources.py
 
 clean:
