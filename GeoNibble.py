@@ -188,7 +188,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
   # Zoom to full extent of layer
   def zoomFull(self):
-    self.canvas.zoomFullExtent()
+    self.canvas.zoomToFullExtent()
 
 
   def showData(self, index):
