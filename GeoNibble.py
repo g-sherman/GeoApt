@@ -7,6 +7,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
+from osgeo import gdal
 import sys
 import os
 # Import our GUI tree->setRootIndex(model->index(QDir::currentPath()));
@@ -22,8 +23,10 @@ qgis_prefix = os.getenv("QGISHOME")
 class MainWindow(QMainWindow, Ui_MainWindow):
 
   def __init__(self):
-    self.supported_rasters = 'tif', 'jpg', 'png', 'vrt'
-    self.supported_vectors = 'shp', 'tab'
+    # get the list of supported rasters from GDAL
+    self.supported_rasters = self.raster_extensions() 
+    # the list of supported vectors
+    self.supported_vectors = 'shp', 'tab', 'mif', 'vrt', 'dgn', 'csv', 'kml', 'gmt', 'gml'
     self.vector_geometry_types = ['Point', 'Line', 'Polygon']
     self.root = os.getenv("HOME")
     self.dockVisibility = False
@@ -441,6 +444,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.dockVisibility = False
     print "dock destroyed"
 
+  def raster_extensions(self):
+    # get the list of supported raster types from the GDAL drivers
+    self.driver_list = list()
+    self.driver_list_description = list()
+    # iterate through the GDAL drivers and get the supported extension list
+    for d in range(0, gdal.GetDriverCount()):
+      driver = gdal.GetDriver(d)
+      metadata = driver.GetMetadata()
+      if metadata.has_key('DMD_EXTENSION'):
+          self.driver_list.append(metadata['DMD_EXTENSION'])
+          self.driver_list_description.append(metadata['DMD_LONGNAME'])
+    
+    self.driver_list_description.sort()
+    return self.driver_list
 
 
 def main(argv):
