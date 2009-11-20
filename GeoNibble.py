@@ -125,7 +125,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.connect(self.actionOpenFolder, SIGNAL("activated()"), self.openFolder)
 
     menu_bar = QMenuBar()
-    menu_bar.addMenu("File")
+    menu_file = menu_bar.addMenu("File")
+    exit_action = QAction("Exit", self)
+    self.connect(exit_action, SIGNAL("triggered()"), self.exit_gndb)
+    menu_file.addAction(exit_action)
     self.menu = self.setMenuBar(menu_bar)
 
     # Create the map toolbar
@@ -465,6 +468,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     
     self.driver_list_description.sort()
     return self.driver_list
+
+  def exit_gndb(self):
+      QApplication.closeAllWindows()
 
 
 def main(argv):
