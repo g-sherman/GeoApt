@@ -124,6 +124,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         "Open Folder", self.frame)
     self.connect(self.actionOpenFolder, SIGNAL("activated()"), self.openFolder)
 
+    menu_bar = QMenuBar()
+    menu_bar.addMenu("File")
+    self.menu = self.setMenuBar(menu_bar)
+
     # Create the map toolbar
     self.toolbar = self.addToolBar("Map")
     # Add the map actions to the toolbar
