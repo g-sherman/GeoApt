@@ -3,6 +3,7 @@
 # Copyright (C) 2009 Gary Sherman
 # Licensed under the terms of GNU GPL 2
 
+# Build UI files and resources
 all: mainwindow_ui.py resources.py
 
 clean:
