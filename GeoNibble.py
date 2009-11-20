@@ -12,7 +12,7 @@ import sys
 import os
 # Import our GUI tree->setRootIndex(model->index(QDir::currentPath()));
 from mainwindow_ui import Ui_MainWindow
-#from qgstreeview import QgsTreeView
+
 # Import our resources (icons)
 import resources
 
@@ -318,81 +318,84 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     dock.setFloating(True)
 
   def getVectorMetadata(self):
-    myMetadataQString = "<html><body>"
-    myMetadataQString += "<table width=\"100%\">"
-    myMetadataQString += "<tr><td bgcolor=\"lightgray\">"
-    myMetadataQString += "<b>General:</b>"
-    myMetadataQString += "</td></tr>"
+    myMetadataQString = """<html><body>
+    <table width='100%'>
+    <tr><td bgcolor='lightgray'>
+    <b>General:</b>
+    </td></tr>"""
 
     # data comment
     if not self.layer.dataComment().isEmpty():
-      myMetadataQString += "<tr><td bgcolor=\"white\">"
-      myMetadataQString += "<b> Layer comment:</b> " + self.layer.dataComment()
-      myMetadataQString += "</td></tr>"
+      myMetadataQString += """<tr><td bgcolor='white'>
+      <b> Layer comment:</b> %s       
+      </td></tr>""" % self.layer.dataComment()
+
 
     # storage type
-    myMetadataQString += "<tr><td bgcolor=\"white\">"
-    myMetadataQString += "<b> Storage type:</b> " + self.layer.storageType()
-    myMetadataQString += "</td></tr>"
+    myMetadataQString += """<tr><td bgcolor='white'>
+    <b> Storage type:</b> %s     
+    </td></tr>""" % self.layer.storageType()
+
 
     # data source
-    myMetadataQString += "<tr><td bgcolor=\"white\">"
-    myMetadataQString += "<b> Source:</b> " + self.layer.publicSource()
-    myMetadataQString += "</td></tr>"
+    myMetadataQString += """<tr><td bgcolor='white'>
+    <b> Source:</b> %s
+    </td></tr>""" % self.layer.publicSource()
+
 
     #geom type
-
     vectorType = self.layer.type()
 
     if ( vectorType < 0 or vectorType > QGis.Polygon ):
       print "Invalid vector type" 
     else:
       vectorTypeString = self.vector_geometry_types[self.layer.type()] 
-      myMetadataQString += "<tr><td bgcolor=\"white\">"
-      myMetadataQString += "<b> Geometry type:</b> " + vectorTypeString
-      myMetadataQString += "</td></tr>"
-
+      myMetadataQString += """<tr><td bgcolor='white'>
+      <b> Geometry type:</b> %s
+      </td></tr>""" % vectorTypeString
 
     # feature count
-    myMetadataQString += "<tr><td bgcolor=\"white\">"
-    myMetadataQString += "<b>Number of features:</b> " + str(self.layer.featureCount())
-    myMetadataQString += "</td></tr>"
+    myMetadataQString += """<tr><td bgcolor='white'>
+    <b>Number of features:</b> %s     
+    </td></tr>""" % str(self.layer.featureCount())
+
+
     #capabilities
-    myMetadataQString += "<tr><td bgcolor=\"white\">"
+    myMetadataQString += "<tr><td bgcolor='white'>"
     myMetadataQString += "<b>Editing capabilities:</b> " + self.layer.capabilitiesString()
     myMetadataQString += "</td></tr>"
     myExtent = self.layer.extent()  
-    myMetadataQString += "<tr><td bgcolor=\"lightgray\">"
+    myMetadataQString += "<tr><td bgcolor='lightgray'>"
     myMetadataQString += "<b>Extents:</b>"
     myMetadataQString += "</td></tr>"
     # extents in layer cs  TODO...maybe make a little nested table to improve layout...
-    myMetadataQString += "<tr><td bgcolor=\"white\">"
+    myMetadataQString += "<tr><td bgcolor='white'>"
     myMetadataQString += "<b>In layer SRS units:</b><br>xMin,yMin :" 
     myMetadataQString += str(myExtent.xMinimum()) + ", " + str( myExtent.yMinimum()) + "<br>xMax,yMax :" 
     myMetadataQString += str(myExtent.xMaximum()) + ", " + str(myExtent.yMaximum())
     myMetadataQString += "</td></tr>"
     # Add the info about each field in the attribute table
-    myMetadataQString += "<tr><td bgcolor=\"lightgray\">"
+    myMetadataQString += "<tr><td bgcolor='lightgray'>"
     myMetadataQString += "<b>Attribute field info:</b>"
     myMetadataQString += "</td></tr>"
-    myMetadataQString += "<tr><td bgcolor=\"white\">"
+    myMetadataQString += "<tr><td bgcolor='white'>"
 
     # Start a nested table in this trow
-    myMetadataQString += "<table width=\"100%\">"
-    myMetadataQString += "<tr><th bgcolor=\"black\">"
-    myMetadataQString += "<font color=\"white\">" + "Field" + "</font>"
+    myMetadataQString += "<table width='100%'>"
+    myMetadataQString += "<tr><th bgcolor='black'>"
+    myMetadataQString += "<font color='white'>" + "Field" + "</font>"
     myMetadataQString += "</th>"
-    myMetadataQString += "<th bgcolor=\"black\">"
-    myMetadataQString += "<font color=\"white\">" + "Type" + "</font>"
+    myMetadataQString += "<th bgcolor='black'>"
+    myMetadataQString += "<font color='white'>" + "Type" + "</font>"
     myMetadataQString += "</th>"
-    myMetadataQString += "<th bgcolor=\"black\">"
-    myMetadataQString += "<font color=\"white\">" + "Length" + "</font>"
+    myMetadataQString += "<th bgcolor='black'>"
+    myMetadataQString += "<font color='white'>" + "Length" + "</font>"
     myMetadataQString += "</th>"
-    myMetadataQString += "<th bgcolor=\"black\">"
-    myMetadataQString += "<font color=\"white\">" + "Precision" + "</font>"
+    myMetadataQString += "<th bgcolor='black'>"
+    myMetadataQString += "<font color='white'>" + "Precision" + "</font>"
     myMetadataQString += "</th>";      
-    myMetadataQString += "<th bgcolor=\"black\">"
-    myMetadataQString += "<font color=\"white\">" + "Comment" + "</font>"
+    myMetadataQString += "<th bgcolor='black'>"
+    myMetadataQString += "<font color='white'>" + "Comment" + "</font>"
     myMetadataQString += "</th>"
  
 #  //get info for each field by looping through them
@@ -400,19 +403,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     myFields = myDataProvider.fields()
     for fld in myFields:
       print "fld is: " , fld
-      myMetadataQString += "<tr><td bgcolor=\"white\">"
+      myMetadataQString += "<tr><td bgcolor='white'>"
       myMetadataQString += myFields[fld].name()
       myMetadataQString += "</td>"
-      myMetadataQString += "<td bgcolor=\"white\">"
+      myMetadataQString += "<td bgcolor='white'>"
       myMetadataQString += myFields[fld].typeName()
       myMetadataQString += "</td>"
-      myMetadataQString += "<td bgcolor=\"white\">"
+      myMetadataQString += "<td bgcolor='white'>"
       myMetadataQString += str(myFields[fld].length())
       myMetadataQString += "</td>"
-      myMetadataQString += "<td bgcolor=\"white\">"
+      myMetadataQString += "<td bgcolor='white'>"
       myMetadataQString += str(myFields[fld].precision())
       myMetadataQString += "</td>"
-      myMetadataQString += "<td bgcolor=\"white\">"
+      myMetadataQString += "<td bgcolor='white'>"
       myMetadataQString += str(myFields[fld].comment())
       myMetadataQString += "</td></tr>"
 #  } 
@@ -422,11 +425,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     # Display layer spatial ref system
-    myMetadataQString += "<tr><td bgcolor=\"lightgray\">"
+    myMetadataQString += "<tr><td bgcolor='lightgray'>"
     myMetadataQString += "<b>Spatial Reference System:</b>"
     myMetadataQString += "</td></tr>";  
-    myMetadataQString += "<tr><td bgcolor=\"white\">"
-    myMetadataQString += self.layer.srs().toProj4().replace(QRegExp("\"")," \"")
+    myMetadataQString += "<tr><td bgcolor='white'>"
+    myMetadataQString += self.layer.srs().toProj4().replace(QRegExp("'")," '")
     myMetadataQString += "</td></tr>";
 
     myMetadataQString += "</td></tr>"; #end of stats container table row
