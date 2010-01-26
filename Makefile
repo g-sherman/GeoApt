@@ -1,4 +1,9 @@
-all: mainwindow_ui.py resources.py
+# Makefile for Geonibble - builds the UI and resource files
+# Copyright (C) 2009 Gary Sherman
+# Licensed under the terms of GNU GPL 2
+
+# Build UI files and resources
+ll: mainwindow_ui.py resources.py
 
 clean:
 	rm -f mainwindow_ui.py resources.py
