@@ -7,5 +7,6 @@
         <file alias="mActionZoomFullExtent.png">images/mActionZoomFullExtent.png</file>
         <file alias="mActionMetadata.png">images/mActionMetadata.png</file>
         <file alias="mActionOpenFolder.png">images/mActionOpenFolder.png</file>
+        <file alias="mActionAddTheme.png">images/mActionAddTheme.png</file>
     </qresource>
 </RCC>

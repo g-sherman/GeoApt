@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Sample directory view 
-# Copyright (C) 2009 Gary Sherman
+# Copyright (C) 2008 Gary Sherman
 # Licensed under the GNU GPL Version 2
 
 # PyQt4 includes for python bindings to QT

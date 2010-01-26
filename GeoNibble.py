@@ -1,24 +1,51 @@
 #!/usr/bin/env python
 # Main window implementation for the data browser
-# Copyright (C) 2009 Gary Sherman
+# Copyright (C) 2008-2010 Gary Sherman
 # Licensed under the terms of GNU GPL 2
-
+# 2008-03-11 added to git
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from qgis.core import *
-from qgis.gui import *
-from osgeo import gdal
 import sys
 import os
-# Import our GUI tree->setRootIndex(model->index(QDir::currentPath()));
-from mainwindow_ui import Ui_MainWindow
 
-# Import our resources (icons)
-import resources
-
+# FIXME - this whole detection of qgis location needs reworking. Currently it is not platform independent 
 # Environment variable QGISHOME must be set to the 1.0.x install directory
 # before running this application
 qgis_prefix = os.getenv("QGISHOME")
+if qgis_prefix == None:
+    print "QGISHOME environment variable not found, looking for QGIS on the PATH"
+    # Try to locate the qgis directory
+    paths = os.environ['PATH'].split(os.pathsep)
+    for path in paths:
+        if os.path.exists(os.path.join(path, 'qgis')):
+            # pop the last part of the path (presumably 'bin')
+            qgis_prefix = os.path.dirname(path)
+            break
+
+    if qgis_prefix == None:
+      print "Unable to find QGIS install.\nPlease set QGISHOME to point to the directory where QGIS is installed"
+      sys.exit(1)
+
+    print "QGIS prefix is %s" % qgis_prefix
+
+    # set up environment based on the qgis prefix
+
+    os.environ['LD_LIBRARY_PATH'] = os.path.join(qgis_prefix, 'lib')
+    sys.path.append(os.path.join(qgis_prefix, 'share','qgis','python'))
+    os.environ['QGISHOME'] = qgis_prefix
+    #import runpy
+    ## respawn
+    #print "respawning..."
+    #runpy.run_module('GeoNibble', run_name="__main__")
+# qgis_prefix is set - finish imports
+from qgis.core import *
+from qgis.gui import *
+from osgeo import gdal
+# Import our GUI tree->setRootIndex(model->index(QDir::currentPath()));
+from mainwindow_ui import Ui_MainWindow
+#from qgstreeview import QgsTreeView
+# Import our resources (icons)
+import resources
 
 class MainWindow(QMainWindow, Ui_MainWindow):
 
@@ -26,7 +53,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # get the list of supported rasters from GDAL
     self.supported_rasters = self.raster_extensions() 
     # the list of supported vectors
-    self.supported_vectors = 'shp', 'tab', 'mif', 'vrt', 'dgn', 'csv', 'kml', 'gmt', 'gml'
+    self.supported_vectors = 'shp', 'tab', 'mif', 'vrt', 'dgn', 'csv', 'kml', 'gmt'  
     self.vector_geometry_types = ['Point', 'Line', 'Polygon']
     self.root = os.getenv("HOME")
     self.dockVisibility = False
@@ -89,6 +116,39 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.tabWidget.addTab(self.treeview, "Directories")
     self.dataFrame = QFrame()
     self.tabWidget.addTab(self.dataFrame, "Databases")
+    # database feature is not implemented so put a label on it for now
+    QLabel("Not Implemented", self.dataFrame)
+
+    # create the tab and frame for the themes
+    self.themesFrame = QFrame()
+    self.tabWidget.addTab(self.themesFrame, "Themes")
+    # enable drop
+    self.themesFrame.setAcceptDrops(True)
+    # setup the model for displaying themes
+    themeModel = QStandardItemModel()
+    parentItem = themeModel.invisibleRootItem()
+    item = QStandardItem("item 1")
+    parentItem.appendRow(item);
+    parentItem = item;
+    item = QStandardItem("item 2")
+    parentItem.appendRow(item);
+    parentItem = item;
+    # setup the view
+    themeGridLayout = QGridLayout(self.themesFrame)
+    # setup the toolbar for the theme tab
+    self.themeToolbar = QToolBar("Theme Tools")
+    # Add the map actions to the toolbar
+    self.themeAdd = QAction(QIcon(":/qgisbrowser/mActionAddTheme.png"), \
+        "Add Theme", self.themeToolbar)
+    self.themeToolbar.addAction(self.themeAdd)
+    themeGridLayout.addWidget(self.themeToolbar)
+    # themes feature is not implemented so put a label on it for now
+    themeGridLayout.addWidget(QLabel("Not Implemented"))
+    themeTree = QTreeView()
+    themeTree.setModel(themeModel)
+    themeGridLayout.addWidget(themeTree)
+    
+
 
     self.splitter.addWidget(self.tabWidget)
 
@@ -98,7 +158,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     #self.model.refresh
     #self.layout.addWidget(self.splitter)
 
-    # make the connections for the treeview
+    # make the connections for the directory/file treeview
     self.connect(self.treeview, SIGNAL("doubleClicked(const QModelIndex&)"), self.showData)
     self.connect(self.treeview, SIGNAL("clicked(const QModelIndex&)"), self.showData)
 
@@ -125,11 +185,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.connect(self.actionOpenFolder, SIGNAL("activated()"), self.openFolder)
 
     menu_bar = QMenuBar()
+    self.menu = self.setMenuBar(menu_bar)
     menu_file = menu_bar.addMenu("File")
     exit_action = QAction("Exit", self)
     self.connect(exit_action, SIGNAL("triggered()"), self.exit_gndb)
     menu_file.addAction(exit_action)
-    self.menu = self.setMenuBar(menu_bar)
+    menu_theme = menu_bar.addMenu("Theme")
+    theme_new_folder_action = QAction("Add new folder...", self)
+    self.connect(theme_new_folder_action, SIGNAL("triggered()"), self.new_theme_folder)
+    menu_theme.addAction(theme_new_folder_action)
+    theme_new_action = QAction("Add theme...", self)
+    self.connect(theme_new_action, SIGNAL("triggered()"), self.new_theme)
+    menu_theme.addAction(theme_new_action)
 
     # Create the map toolbar
     self.toolbar = self.addToolBar("Map")
@@ -325,48 +392,45 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     dock.setFloating(True)
 
   def getVectorMetadata(self):
-    myMetadataQString = """<html><body>
-    <table width='100%'>
-    <tr><td bgcolor='lightgray'>
-    <b>General:</b>
-    </td></tr>"""
+    myMetadataQString = "<html><body>"
+    myMetadataQString += "<table width='100%'>"
+    myMetadataQString += "<tr><td bgcolor='lightgray'>"
+    myMetadataQString += "<b>General:</b>"
+    myMetadataQString += "</td></tr>"
 
     # data comment
     if not self.layer.dataComment().isEmpty():
-      myMetadataQString += """<tr><td bgcolor='white'>
-      <b> Layer comment:</b> %s       
-      </td></tr>""" % self.layer.dataComment()
-
+      myMetadataQString += "<tr><td bgcolor='white'>"
+      myMetadataQString += "<b> Layer comment:</b> " + self.layer.dataComment()
+      myMetadataQString += "</td></tr>"
 
     # storage type
-    myMetadataQString += """<tr><td bgcolor='white'>
-    <b> Storage type:</b> %s     
-    </td></tr>""" % self.layer.storageType()
-
+    myMetadataQString += "<tr><td bgcolor='white'>"
+    myMetadataQString += "<b> Storage type:</b> " + self.layer.storageType()
+    myMetadataQString += "</td></tr>"
 
     # data source
-    myMetadataQString += """<tr><td bgcolor='white'>
-    <b> Source:</b> %s
-    </td></tr>""" % self.layer.publicSource()
-
+    myMetadataQString += "<tr><td bgcolor='white'>"
+    myMetadataQString += "<b> Source:</b> " + self.layer.publicSource()
+    myMetadataQString += "</td></tr>"
 
     #geom type
+
     vectorType = self.layer.type()
 
     if ( vectorType < 0 or vectorType > QGis.Polygon ):
       print "Invalid vector type" 
     else:
       vectorTypeString = self.vector_geometry_types[self.layer.type()] 
-      myMetadataQString += """<tr><td bgcolor='white'>
-      <b> Geometry type:</b> %s
-      </td></tr>""" % vectorTypeString
+      myMetadataQString += "<tr><td bgcolor='white'>"
+      myMetadataQString += "<b> Geometry type:</b> " + vectorTypeString
+      myMetadataQString += "</td></tr>"
+
 
     # feature count
-    myMetadataQString += """<tr><td bgcolor='white'>
-    <b>Number of features:</b> %s     
-    </td></tr>""" % str(self.layer.featureCount())
-
-
+    myMetadataQString += "<tr><td bgcolor='white'>"
+    myMetadataQString += "<b>Number of features:</b> " + str(self.layer.featureCount())
+    myMetadataQString += "</td></tr>"
     #capabilities
     myMetadataQString += "<tr><td bgcolor='white'>"
     myMetadataQString += "<b>Editing capabilities:</b> " + self.layer.capabilitiesString()
@@ -429,14 +493,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 #
     # close field list
     myMetadataQString += "</table>"; #end of nested table
-
-
     # Display layer spatial ref system
     myMetadataQString += "<tr><td bgcolor='lightgray'>"
     myMetadataQString += "<b>Spatial Reference System:</b>"
     myMetadataQString += "</td></tr>";  
     myMetadataQString += "<tr><td bgcolor='white'>"
-    myMetadataQString += self.layer.srs().toProj4().replace(QRegExp("'")," '")
+    myMetadataQString += self.layer.srs().toProj4().replace(QRegExp("\"")," \"")
     myMetadataQString += "</td></tr>";
 
     myMetadataQString += "</td></tr>"; #end of stats container table row
@@ -454,6 +516,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.dockVisibility = False
     print "dock destroyed"
 
+  def new_theme_folder(self):
+    QMessageBox.information(self, "Themes","Add new theme folder")    
+
+  def new_theme(self):
+    QMessageBox.information(self, "Themes","Add new theme")    
+
+  def exit_gndb(self):
+    QApplication.closeAllWindows()
+
   def raster_extensions(self):
     # get the list of supported raster types from the GDAL drivers
     self.driver_list = list()
@@ -469,8 +540,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.driver_list_description.sort()
     return self.driver_list
 
-  def exit_gndb(self):
-      QApplication.closeAllWindows()
+
+
 
 
 def main(argv):
