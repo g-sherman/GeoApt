@@ -3,10 +3,12 @@
 # Licensed under the terms of GNU GPL 2
 
 # Build UI files and resources
-ll: mainwindow_ui.py resources.py
+UISOURCES = mainwindow_ui.py resources.py dlgAddThemeFolder_ui.py
+
+all: $(UISOURCES)
 
 clean:
-	rm -f mainwindow_ui.py resources.py
+	rm -f $(UISOURCES)
 	rm -f *.pyc
 	rm -f *~
 

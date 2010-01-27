@@ -7,6 +7,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import sys
 import os
+from add_theme_folder import *
 
 # FIXME - this whole detection of qgis location needs reworking. Currently it is not platform independent 
 # Environment variable QGISHOME must be set to the 1.0.x install directory
@@ -125,14 +126,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # enable drop
     self.themesFrame.setAcceptDrops(True)
     # setup the model for displaying themes
-    themeModel = QStandardItemModel()
-    parentItem = themeModel.invisibleRootItem()
-    item = QStandardItem("item 1")
-    parentItem.appendRow(item);
-    parentItem = item;
-    item = QStandardItem("item 2")
-    parentItem.appendRow(item);
-    parentItem = item;
+    self.themeModel = QStandardItemModel()
+    #parentItem = self.themeModel.invisibleRootItem()
+    #item = QStandardItem("item 1")
+    #parentItem.appendRow(item);
+    #parentItem = item;
+    #item = QStandardItem("item 2")
+    #parentItem.appendRow(item);
+    #parentItem = item;
     # setup the view
     themeGridLayout = QGridLayout(self.themesFrame)
     # setup the toolbar for the theme tab
@@ -141,11 +142,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.themeAdd = QAction(QIcon(":/qgisbrowser/mActionAddTheme.png"), \
         "Add Theme", self.themeToolbar)
     self.themeToolbar.addAction(self.themeAdd)
+    self.connect(self.themeAdd, SIGNAL("activated()"), self.new_theme_folder)
     themeGridLayout.addWidget(self.themeToolbar)
     # themes feature is not implemented so put a label on it for now
     themeGridLayout.addWidget(QLabel("Not Implemented"))
     themeTree = QTreeView()
-    themeTree.setModel(themeModel)
+    themeTree.setHeaderHidden(True)
+    themeTree.setModel(self.themeModel)
     themeGridLayout.addWidget(themeTree)
     
 
@@ -517,7 +520,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     print "dock destroyed"
 
   def new_theme_folder(self):
-    QMessageBox.information(self, "Themes","Add new theme folder")    
+    add_theme_folder = AddThemeFolder()
+    if add_theme_folder.exec_() == QDialog.Accepted:
+        QMessageBox.information(self, "Themes","Will now add a theme folder: %s" % add_theme_folder.folder_name.text())    
+        self.themeModel.invisibleRootItem().appendRow(QStandardItem(add_theme_folder.folder_name.text()))
 
   def new_theme(self):
     QMessageBox.information(self, "Themes","Add new theme")    
