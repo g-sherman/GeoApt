@@ -5,6 +5,7 @@
 # 2008-03-11 added to git
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from PyQt4.QtSql import *
 import sys
 import os
 from add_theme_folder import *
@@ -42,6 +43,7 @@ if qgis_prefix == None:
 from qgis.core import *
 from qgis.gui import *
 from osgeo import gdal
+from theme_database import *
 # Import our GUI tree->setRootIndex(model->index(QDir::currentPath()));
 from mainwindow_ui import Ui_MainWindow
 #from qgstreeview import QgsTreeView
@@ -115,10 +117,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     self.tabWidget = QTabWidget()
     self.tabWidget.addTab(self.treeview, "Directories")
-    self.dataFrame = QFrame()
-    self.tabWidget.addTab(self.dataFrame, "Databases")
-    # database feature is not implemented so put a label on it for now
-    QLabel("Not Implemented", self.dataFrame)
 
     # create the tab and frame for the themes
     self.themesFrame = QFrame()
@@ -144,13 +142,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.themeToolbar.addAction(self.themeAdd)
     self.connect(self.themeAdd, SIGNAL("activated()"), self.new_theme_folder)
     themeGridLayout.addWidget(self.themeToolbar)
-    # themes feature is not implemented so put a label on it for now
-    themeGridLayout.addWidget(QLabel("Not Implemented"))
-    themeTree = QTreeView()
-    themeTree.setHeaderHidden(True)
-    themeTree.setModel(self.themeModel)
-    themeGridLayout.addWidget(themeTree)
+    self.themeTree = QTreeView()
+    self.themeTree.setHeaderHidden(True)
+    self.themeTree.setModel(self.themeModel)
+    themeGridLayout.addWidget(self.themeTree)
     
+    self.dataFrame = QFrame()
+    self.tabWidget.addTab(self.dataFrame, "Databases")
+    # database feature is not implemented so put a label on it for now
+    QLabel("Not Implemented", self.dataFrame)
 
 
     self.splitter.addWidget(self.tabWidget)
@@ -164,6 +164,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # make the connections for the directory/file treeview
     self.connect(self.treeview, SIGNAL("doubleClicked(const QModelIndex&)"), self.showData)
     self.connect(self.treeview, SIGNAL("clicked(const QModelIndex&)"), self.showData)
+
+    # make the connections for the theme treeview
+    self.themeTree.setContextMenuPolicy(Qt.CustomContextMenu) 
+    self.connect(self.themeTree, SIGNAL("customContextMenuRequested(const QPoint &)"), self.theme_tree_popup) 
+    
 
     # set up the actions
     self.actionZoomIn = QAction(QIcon(":/qgisbrowser/mActionZoomIn.png"), \
@@ -251,6 +256,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # set up drag
     #self.treeview.__class__.dragEnterEvent = self.tvDragEnterEvent
+
+
+    # Init the sqlite database
+    self.db = QSqlDatabase.addDatabase("QSQLITE")
+
+    self.dbname = os.path.join(os.environ['HOME'],'.geonibble',"geonibble.db")
+    print "Opening sqlite3 database %s\n" % self.dbname
+    self.db.setDatabaseName(self.dbname)
+    if not os.path.exists(self.dbname):
+        # create the storage directory
+        os.mkdir(os.path.join(os.environ['HOME'],'.geonibble'))
+        if self.db.open():
+            # create the database schema
+            print "Initializing database schema for theme storage"
+            ThemeDatabase.create_schema(self.db)
+            QMessageBox.information(self, "Themes","A new theme database has been created (this only happens once)")
+        else: 
+            print "Failed to open %s\n" % self.dbname
+            QMessageBox.information(self, "Themes","Unable to create the theme database. Themes will be disabled")    
+
+        #self.db.close()
+
 
     ## end __init__
 
@@ -519,16 +546,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.dockVisibility = False
     print "dock destroyed"
 
+  def theme_tree_popup(self, pos):
+    index = self.themeTree.indexAt(pos)
+    print index.data().toString()
+    if not index.isValid(): 
+        return 
+
+    item = self.themeTree.indexWidget(index) 
+    name = item.text(0) 
+  
+    print "caught mouse event for context menu for %s" % name
+
   def new_theme_folder(self):
     add_theme_folder = AddThemeFolder()
     if add_theme_folder.exec_() == QDialog.Accepted:
-        QMessageBox.information(self, "Themes","Will now add a theme folder: %s" % add_theme_folder.folder_name.text())    
-        self.themeModel.invisibleRootItem().appendRow(QStandardItem(add_theme_folder.folder_name.text()))
+        #QMessageBox.information(self, "Themes","Will now add a theme folder: %s" % add_theme_folder.folder_name.text())    
+        folder_name = add_theme_folder.folder_name.text()
+        if len(folder_name) > 0:
+            self.themeModel.invisibleRootItem().appendRow(QStandardItem(add_theme_folder.folder_name.text()))
 
   def new_theme(self):
     QMessageBox.information(self, "Themes","Add new theme")    
 
   def exit_gndb(self):
+    print "Cleaning up...\n"
+    self.db.close()
+    # set the database connection to None so Qt cleans up the connection properly
+    self.db = None
+    QSqlDatabase.removeDatabase(self.dbname) 
     QApplication.closeAllWindows()
 
   def raster_extensions(self):
