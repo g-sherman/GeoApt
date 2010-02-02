@@ -9,6 +9,9 @@ class ThemeDatabase:
         db.exec_("create table themes (id int primary key, name text, path text)")
 
     @classmethod
-    def add_folder(self, db, theme, parent_id):
+    def add_folder(self, db, folder, parent_id=0):
         print "Adding folder to database\n"
-        db.exec_("insert into themes values(0, '%s', '%s')" % [theme.name, theme.path])
+        cursor = db.cursor()
+        cursor.execute("insert into themes (name) values('%s')" % folder)
+        db.commit()
+        return cursor.lastrowid

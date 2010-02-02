@@ -8,6 +8,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtSql import *
 import sys
 import os
+import sqlite3
 from add_theme_folder import *
 
 # FIXME - this whole detection of qgis location needs reworking. Currently it is not platform independent 
@@ -259,22 +260,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     # Init the sqlite database
-    self.db = QSqlDatabase.addDatabase("QSQLITE")
-
     self.dbname = os.path.join(os.environ['HOME'],'.geonibble',"geonibble.db")
     print "Opening sqlite3 database %s\n" % self.dbname
-    self.db.setDatabaseName(self.dbname)
     if not os.path.exists(self.dbname):
         # create the storage directory
         os.mkdir(os.path.join(os.environ['HOME'],'.geonibble'))
-        if self.db.open():
-            # create the database schema
-            print "Initializing database schema for theme storage"
-            ThemeDatabase.create_schema(self.db)
-            QMessageBox.information(self, "Themes","A new theme database has been created (this only happens once)")
-        else: 
-            print "Failed to open %s\n" % self.dbname
-            QMessageBox.information(self, "Themes","Unable to create the theme database. Themes will be disabled")    
+        self.db = sqlite3.connect(self.dbname)
+        # create the database schema
+        print "Initializing database schema for theme storage"
+        ThemeDatabase.create_schema(self.db)
+        QMessageBox.information(self, "Themes","A new theme database has been created (this only happens once)")
+    else: 
+         self.db = sqlite3.connect(self.dbname)
 
         #self.db.close()
 
@@ -548,14 +545,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
   def theme_tree_popup(self, pos):
     index = self.themeTree.indexAt(pos)
-    print index.data().toString()
     if not index.isValid(): 
         return 
+    print "Index type is %s" % type(index)
+    print index.data().toString()
+    name = index.data().toString()
+    id = index.data(Qt.UserRole +1).toInt()
+    print "Type of id is %s" % type(id)
+    print "Caught mouse event for context menu for %s" % name
+    print "Caught mouse event for context menu for id" , id[0]
 
-    item = self.themeTree.indexWidget(index) 
-    name = item.text(0) 
-  
-    print "caught mouse event for context menu for %s" % name
+    print "Pos type is %s" % type(pos)
+    print "Pos is ", pos
+    pop_menu = QMenu()
+    pop_add = QAction("Add theme...",pop_menu)
+    pop_menu.addAction(pop_add)
+    pop_menu.exec_(self.themeTree.mapToGlobal(pos), pop_add)
+
+
 
   def new_theme_folder(self):
     add_theme_folder = AddThemeFolder()
@@ -563,7 +570,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #QMessageBox.information(self, "Themes","Will now add a theme folder: %s" % add_theme_folder.folder_name.text())    
         folder_name = add_theme_folder.folder_name.text()
         if len(folder_name) > 0:
-            self.themeModel.invisibleRootItem().appendRow(QStandardItem(add_theme_folder.folder_name.text()))
+            new_folder = QStandardItem(add_theme_folder.folder_name.text())
+            # add to the database
+            id = ThemeDatabase.add_folder(self.db, folder_name)
+            print "Setting id for new folder to %i" % id
+            new_folder.setData(QVariant(id))
+            self.themeModel.invisibleRootItem().appendRow(new_folder)
 
   def new_theme(self):
     QMessageBox.information(self, "Themes","Add new theme")    
