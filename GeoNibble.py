@@ -10,6 +10,7 @@ import sys
 import os
 import sqlite3
 from add_theme_folder import *
+from add_theme import *
 
 # FIXME - this whole detection of qgis location needs reworking. Currently it is not platform independent 
 # Environment variable QGISHOME must be set to the 1.0.x install directory
@@ -255,28 +256,52 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # resize the name column to contents
     self.treeview.resizeColumnToContents(0)
 
+    self.move(100,100)
+    self.show()
+    self.init_database()
+    self.restore_themes()
+
     # set up drag
     #self.treeview.__class__.dragEnterEvent = self.tvDragEnterEvent
 
 
+
+    ## end __init__
+  def init_database(self):
     # Init the sqlite database
-    self.dbname = os.path.join(os.environ['HOME'],'.geonibble',"geonibble.db")
+    self.db_base_path = os.path.join(os.environ['HOME'],'.geonibble')
+    self.dbname = os.path.join(self.db_base_path,"geonibble.db")
     print "Opening sqlite3 database %s\n" % self.dbname
     if not os.path.exists(self.dbname):
         # create the storage directory
-        os.mkdir(os.path.join(os.environ['HOME'],'.geonibble'))
+        if not os.path.exists(self.db_base_path):
+            os.mkdir(self.db_base_path)
         self.db = sqlite3.connect(self.dbname)
         # create the database schema
         print "Initializing database schema for theme storage"
         ThemeDatabase.create_schema(self.db)
-        QMessageBox.information(self, "Themes","A new theme database has been created (this only happens once)")
+        QMessageBox.information(self, "Theme Database","A new theme database has been created.\nThis happens the first time you run the application or\nif your theme database has been moved or deleted.\n\nYour theme database can be found at:\n%s" % self.dbname)
     else: 
          self.db = sqlite3.connect(self.dbname)
 
         #self.db.close()
 
+  def restore_themes(self):
+      # get the dict of theme folders and associated themes
+      folders = ThemeDatabase.folder_list(self.db)
+      for folder in folders:
+        new_folder = QStandardItem(folder.name)
+        new_folder.setData(QVariant(folder.id))
+        self.themeModel.invisibleRootItem().appendRow(new_folder)
 
-    ## end __init__
+      #themes = ThemeDatabase.theme_list(self.db)
+      #keys = themes.keys()
+      #keys.sort()
+      #for key in keys:
+      #  new_folder = QStandardItem(themes[key][0].name)
+      #  new_folder.setData(QVariant(themes[key][0].id))
+      #  self.themeModel.invisibleRootItem().appendRow(new_folder)
+
 
   # Set the map tool to zoom in
   def zoomIn(self):
@@ -557,8 +582,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     print "Pos type is %s" % type(pos)
     print "Pos is ", pos
+    self.current_theme = Theme(id[0], name)
+    self.current_index = index
     pop_menu = QMenu()
     pop_add = QAction("Add theme...",pop_menu)
+    self.connect(pop_add, SIGNAL("triggered()"), self.add_new_theme)
     pop_menu.addAction(pop_add)
     pop_menu.exec_(self.themeTree.mapToGlobal(pos), pop_add)
 
@@ -577,6 +605,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             new_folder.setData(QVariant(id))
             self.themeModel.invisibleRootItem().appendRow(new_folder)
 
+  def add_new_theme(self):
+      print "adding new theme to folder %s with id %i\n" % (self.current_theme.name, self.current_theme.id)
+      add_theme = AddTheme()
+      if add_theme.exec_() == QDialog.Accepted:
+          theme_name = add_theme.led_theme_name.text()
+          if len(theme_name) > 0:
+              new_theme = QStandardItem(theme_name)
+              #id = ThemeDatabase.add_theme(self.db, theme_name)
+              id = 99
+              new_theme.setData(QVariant(id))
+              new_theme.setData(QVariant(add_theme.led_path_name.text()))
+              self.themeModel.current_index.appendRow(theme_folder)
+
+
+
+
+
   def new_theme(self):
     QMessageBox.information(self, "Themes","Add new theme")    
 
@@ -585,7 +630,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.db.close()
     # set the database connection to None so Qt cleans up the connection properly
     self.db = None
-    QSqlDatabase.removeDatabase(self.dbname) 
+    #QSqlDatabase.removeDatabase(self.dbname) 
     QApplication.closeAllWindows()
 
   def raster_extensions(self):
@@ -619,8 +664,9 @@ def main(argv):
   # create main window
   wnd = MainWindow()
   # Move the app window to upper left
-  wnd.move(100,100)
-  wnd.show()
+  #wnd.move(100,100)
+  #wnd.show()
+  #wnd.init_database()
 
   # run!
   retval = app.exec_()
