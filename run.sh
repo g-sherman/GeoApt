@@ -1,5 +1,5 @@
 #!/bin/sh
-# Run the geonibble data browser. This script works on Mac OS X and
+# Run the GeoApt data browser. This script works on Mac OS X and
 # Linux/Unix variants
 # Copyright (C) 2008 Gary Sherman
 # Licensed under the terms of GNU GPL 2
@@ -21,6 +21,6 @@ else
       export PYTHONPATH=$PYTHONPATH:$QGISBASE/share/qgis/python 
       export QGISHOME=$QGISBASE
     fi
-  ./GeoNibble.py
+  ./GeoApt.py
 fi
 

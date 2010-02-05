@@ -40,7 +40,7 @@ if qgis_prefix == None:
     #import runpy
     ## respawn
     #print "respawning..."
-    #runpy.run_module('GeoNibble', run_name="__main__")
+    #runpy.run_module('GeoApt', run_name="__main__")
 # qgis_prefix is set - finish imports
 from qgis.core import *
 from qgis.gui import *
@@ -69,7 +69,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.setupUi(self)
 
     # Set the title for the app
-    self.setWindowTitle("GeoNibble Data Browser")
+    self.setWindowTitle("GeoApt Data Browser")
 
     # create the widgets
     self.layout = QHBoxLayout(self.frame)
@@ -269,8 +269,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     ## end __init__
   def init_database(self):
     # Init the sqlite database
-    self.db_base_path = os.path.join(os.environ['HOME'],'.geonibble')
-    self.dbname = os.path.join(self.db_base_path,"geonibble.db")
+    self.db_base_path = os.path.join(os.environ['HOME'],'.geoapt')
+    self.dbname = os.path.join(self.db_base_path,"geoapt.db")
     print "Opening sqlite3 database %s\n" % self.dbname
     if not os.path.exists(self.dbname):
         # create the storage directory

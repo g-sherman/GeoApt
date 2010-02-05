@@ -7,7 +7,7 @@ Usage:
 
 from setuptools import setup
 
-APP = ['GeoNibble.py']
+APP = ['GeoApt.py']
 DATA_FILES = ['images/mActionAddLayer.png',
  'images/mActionMetadata.png',
  'images/mActionOpenFolder.png',

@@ -1,4 +1,4 @@
-GeoNibble is a spatial data browser and theme catalog written in Python
+GeoApt is a spatial data browser and theme catalog written in Python
 using the QGIS libraries.
 Copyright (C) 2010 Gary Sherman
 All code is licensed under the GNU GPL version 2.
