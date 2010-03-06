@@ -35,12 +35,13 @@ if qgis_prefix == None:
     # set up environment based on the qgis prefix
 
     os.environ['LD_LIBRARY_PATH'] = os.path.join(qgis_prefix, 'lib')
+    os.system("export LD_LIBRARY_PATH=%s" % os.path.join(qgis_prefix,'lib'))
     sys.path.append(os.path.join(qgis_prefix, 'share','qgis','python'))
     os.environ['QGISHOME'] = qgis_prefix
-    #import runpy
+    import runpy
     ## respawn
-    #print "respawning..."
-    #runpy.run_module('GeoApt', run_name="__main__")
+    print "respawning..."
+    runpy.run_module('GeoApt', run_name="__main__")
 # qgis_prefix is set - finish imports
 from qgis.core import *
 from qgis.gui import *
@@ -144,9 +145,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.themeToolbar.addAction(self.themeAdd)
     self.connect(self.themeAdd, SIGNAL("activated()"), self.new_theme_folder)
     themeGridLayout.addWidget(self.themeToolbar)
-    self.themeTree = QTreeView()
+    self.themeTree = QTreeWidget()
     self.themeTree.setHeaderHidden(True)
-    self.themeTree.setModel(self.themeModel)
+    # using treewidget instead of model/view -- self.themeTree.setModel(self.themeModel)
     themeGridLayout.addWidget(self.themeTree)
     
     self.dataFrame = QFrame()
@@ -207,6 +208,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     theme_new_action = QAction("Add theme...", self)
     self.connect(theme_new_action, SIGNAL("triggered()"), self.new_theme)
     menu_theme.addAction(theme_new_action)
+    menu_favorites = menu_bar.addMenu("Favorites")
+    
+
 
     # Create the map toolbar
     self.toolbar = self.addToolBar("Map")
@@ -227,6 +231,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.historyCombo = QComboBox()
     self.connect(self.historyCombo, SIGNAL("currentIndexChanged(const QString&)"), self.setFolder)
     self.historyCombo.setMinimumWidth(180)
+    self.historyCombo.setEditable(True)
     # label for the combo
     self.historyLabel = QLabel()
     self.historyLabel.setText('Directories:')
@@ -251,6 +256,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     #TODO: restore the history list from settings file
     # add it to the drop down
+
     if self.historyCombo.findText(self.root) == -1:
       self.historyCombo.addItem(self.root)
     # resize the name column to contents
@@ -290,9 +296,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
       # get the dict of theme folders and associated themes
       folders = ThemeDatabase.folder_list(self.db)
       for folder in folders:
-        new_folder = QStandardItem(folder.name)
-        new_folder.setData(QVariant(folder.id))
-        self.themeModel.invisibleRootItem().appendRow(new_folder)
+        string_list = QStringList()
+        string_list << folder.name
+        string_list << str(folder.id)
+        new_folder = QTreeWidgetItem(self.themeTree, string_list)
+        #self.themeTree.insertTopLevelItems(string_list)
 
       #themes = ThemeDatabase.theme_list(self.db)
       #keys = themes.keys()
@@ -607,16 +615,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
   def add_new_theme(self):
       print "adding new theme to folder %s with id %i\n" % (self.current_theme.name, self.current_theme.id)
+      print type(self.current_theme)
       add_theme = AddTheme()
+      add_theme.label_folder_name.setText(self.current_theme.name)
       if add_theme.exec_() == QDialog.Accepted:
           theme_name = add_theme.led_theme_name.text()
           if len(theme_name) > 0:
-              new_theme = QStandardItem(theme_name)
-              #id = ThemeDatabase.add_theme(self.db, theme_name)
-              id = 99
-              new_theme.setData(QVariant(id))
-              new_theme.setData(QVariant(add_theme.led_path_name.text()))
-              self.themeModel.current_index.appendRow(theme_folder)
+              # get the current item
+              current_item = self.themeTree.currentItem()
+              parent_id = current_item.data(1, Qt.DisplayRole)
+              print "ID for parent is %i" %  parent_id.toInt()[0]
+              id = ThemeDatabase.add_theme(self.db, theme_name, parent_id.toInt()[0])
+              string_list = QStringList()
+              string_list << theme_name
+              string_list << str(id)
+              new_theme = QTreeWidgetItem(self.themeTree.currentItem(), string_list)
 
 
 
@@ -630,6 +643,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.db.close()
     # set the database connection to None so Qt cleans up the connection properly
     self.db = None
+    # save the directory list
+    QCoreApplication.setOrganizationName("MicroResources")
+    QCoreApplication.setOrganizationDomain("geoapt.com")
+    QCoreApplication.setApplicationName("GeoApt")
+    settings = QSettings()
     #QSqlDatabase.removeDatabase(self.dbname) 
     QApplication.closeAllWindows()
 

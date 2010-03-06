@@ -20,6 +20,14 @@ class ThemeDatabase:
         return cursor.lastrowid
 
     @classmethod
+    def add_theme(self, db, theme_name, parent_id):
+        print "Adding theme to database\n"
+        cursor = db.cursor()
+        cursor.execute("insert into themes (name, parent_id) values('%s', %i)" % (theme_name, parent_id))
+        db.commit()
+        return cursor.lastrowid
+
+    @classmethod
     def folder_list(self, db):
         # create a list containing the theme folders
         cursor = db.cursor()
