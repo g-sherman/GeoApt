@@ -39,6 +39,7 @@ class ThemeDatabase:
         cursor.close()
         return folder_list
 
+    @classmethod
     def theme_list(self, db):
         # create a dict containing the theme folder and its themes
         cursor = db.cursor()
@@ -48,7 +49,7 @@ class ThemeDatabase:
         theme_cursor = db.cursor()
         for row in cursor:
             print row
-            theme_cursor.execute("select id, name from themes where parent_id = %s" % row[0])
+            theme_cursor.execute("select id, name, path from themes where parent_id = %s" % row[0])
             child_themes = list()
             for t_row in theme_cursor:
                 child_themes.append(Theme(t_row[0], t_row[1], t_row[2]))

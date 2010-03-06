@@ -46,7 +46,11 @@ if qgis_prefix == None:
 # qgis_prefix is set - finish imports
 from qgis.core import *
 from qgis.gui import *
-from osgeo import gdal
+try:
+    from osgeo import gdal
+    have_osgeo = True
+except ImportError:
+    have_osgeo = False
 from theme_database import *
 # Import our GUI tree->setRootIndex(model->index(QDir::currentPath()));
 from mainwindow_ui import Ui_MainWindow
@@ -58,7 +62,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
   def __init__(self):
     # get the list of supported rasters from GDAL
-    self.supported_rasters = self.raster_extensions() 
+    if have_osgeo:
+        self.supported_rasters = self.raster_extensions() 
+    else:
+        self.supported_rasters = ['tif', 'tiff', 'png', 'jpg', 'gif']
     # the list of supported vectors
     self.supported_vectors = 'shp', 'tab', 'mif', 'vrt', 'dgn', 'csv', 'kml', 'gmt'  
     self.vector_geometry_types = ['Point', 'Line', 'Polygon']
@@ -303,20 +310,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
   def restore_themes(self):
       # get the dict of theme folders and associated themes
       folders = ThemeDatabase.folder_list(self.db)
+      themes = ThemeDatabase.theme_list(self.db)
       for folder in folders:
         string_list = QStringList()
         string_list << folder.name
         string_list << str(folder.id)
         new_folder = QTreeWidgetItem(self.themeTree, string_list)
+        # get the folders subitems
+        child_themes = themes[folder.id]
+        for theme in child_themes:
+            theme_strings = QStringList()
+            theme_strings << theme.name
+            theme_strings << str(theme.id)
+            QTreeWidgetItem(new_folder, theme_strings)
         #self.themeTree.insertTopLevelItems(string_list)
 
-      #themes = ThemeDatabase.theme_list(self.db)
-      #keys = themes.keys()
-      #keys.sort()
-      #for key in keys:
-      #  new_folder = QStandardItem(themes[key][0].name)
-      #  new_folder.setData(QVariant(themes[key][0].id))
-      #  self.themeModel.invisibleRootItem().appendRow(new_folder)
 
 
   # Set the map tool to zoom in
