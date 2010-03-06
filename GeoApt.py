@@ -6,6 +6,7 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtSql import *
+import pdb
 import sys
 import os
 import sqlite3
@@ -230,7 +231,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.fileToolbar = self.addToolBar("File")
     self.historyCombo = QComboBox()
     self.connect(self.historyCombo, SIGNAL("currentIndexChanged(const QString&)"), self.setFolder)
-    self.historyCombo.setMinimumWidth(180)
+    self.historyCombo.setMinimumWidth(280)
     self.historyCombo.setEditable(True)
     # label for the combo
     self.historyLabel = QLabel()
@@ -241,21 +242,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.fileToolbar.addAction(self.actionOpenFolder)
 
     # Create the database management toolbar
-    self.databaseToolbar = self.addToolBar("Database")
-    self.databaseCombo = QComboBox()
-    self.connect(self.databaseCombo, SIGNAL("currentIndexChanged(const QString&)"), self.setDatabase)
-    self.databaseCombo.setMinimumWidth(180)
-    # label for the combo
-    self.databaseLabel = QLabel()
-    self.databaseLabel.setText('Databases:')
-    self.databaseToolbar.addWidget(self.databaseLabel)
-    self.databaseToolbar.addWidget(self.databaseCombo)
+    #self.databaseToolbar = self.addToolBar("Database")
+    #self.databaseCombo = QComboBox()
+    #self.connect(self.databaseCombo, SIGNAL("currentIndexChanged(const QString&)"), self.setDatabase)
+    #self.databaseCombo.setMinimumWidth(180)
+    ## label for the combo
+    #self.databaseLabel = QLabel()
+    #self.databaseLabel.setText('Databases:')
+    #self.databaseToolbar.addWidget(self.databaseLabel)
+    #self.databaseToolbar.addWidget(self.databaseCombo)
 
     # set the default tree path
     self.treeview.setRootIndex(self.model.index(self.root));
 
     #TODO: restore the history list from settings file
     # add it to the drop down
+    QCoreApplication.setOrganizationName("MicroResources")
+    QCoreApplication.setOrganizationDomain("geoapt.com")
+    QCoreApplication.setApplicationName("GeoApt")
+    settings = QSettings()
+    history_list = settings.value('history/folders').toList()
+    for folder in history_list:
+        self.historyCombo.addItem(folder.toString())
 
     if self.historyCombo.findText(self.root) == -1:
       self.historyCombo.addItem(self.root)
@@ -421,6 +429,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # add the folder to the drop-down list
     if self.historyCombo.findText(folder) == -1:
       self.historyCombo.addItem(folder)
+      # store it to the preferences
+
 
   def setDatabase(self, database):
       pass
@@ -648,6 +658,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     QCoreApplication.setOrganizationDomain("geoapt.com")
     QCoreApplication.setApplicationName("GeoApt")
     settings = QSettings()
+    history_list = list()
+    for i in range(self.historyCombo.count()):
+        print "adding %s to the history list" % self.historyCombo.itemText(i)
+        history_list.append(self.historyCombo.itemText(i))
+
+    settings.setValue('history/folders', history_list)
+    #pyqtRemoveInputHook()
+    #pdb.set_trace()
+    
     #QSqlDatabase.removeDatabase(self.dbname) 
     QApplication.closeAllWindows()
 

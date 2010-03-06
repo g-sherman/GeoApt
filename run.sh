@@ -21,6 +21,6 @@ else
       export PYTHONPATH=$PYTHONPATH:$QGISBASE/share/qgis/python 
       export QGISHOME=$QGISBASE
     fi
- python2.5  ./GeoApt.py
+   ./GeoApt.py
 fi
 
