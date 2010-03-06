@@ -2,3 +2,35 @@ GeoApt is a spatial data browser and theme catalog written in Python
 using the QGIS libraries.
 Copyright (C) 2010 Gary Sherman
 All code is licensed under the GNU GPL version 2.
+
+**Features
+  * Browse directories and preview raster and vector data
+  * Drag and drop raster or vector data files to QGIS or other applications
+  * View metadata about the data
+
+**Requirements
+  * Python 
+  * PyQt
+  * Qt
+  * A QGIS install
+
+  Depending on your platform, the QGIS install may include the needed PyQt and Qt
+  requirements.
+
+**Running GEOAPT Spatial Data Browser
+  At present, GeoApt runs as a Python script. There are now binary applications
+  (.exe or .app) for Windows or Mac.
+
+  * Linux or Mac OS X
+    Use the run.sh script and specify the path to your QGIS installation.
+    Running the script with no arguments will give you a hint.
+
+  * Windows
+    On Windows you must have the OSGeo4w install of QGIS. To run the browser
+      1. From the Start menu, open an OSGeo4w shell
+      2. Set the environment by issuing the following commands
+          set PATH=%PATH%;c:\osgeo4w\apps\qgis-unstable\bin
+          set PYTHONPATH=%PYTHONPATH%;c:\osgeo4w\apps\qgis-unstable\python
+          set QGISHOME=c:\osgeo4w\apps\qgis-unstable        
+    These settings assume your OSGeo4w install uses the default location. If
+    not, adjust accordingly.
