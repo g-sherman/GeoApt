@@ -13,7 +13,7 @@ else
     then
       # setup for a Mac
       export DYLD_LIBRARY_PATH=$QGISBASE/Contents/MacOS/lib
-      export PYTHONPATH=$PYTHONPATH:$QGISBASE/Resources/python 
+      export PYTHONPATH=$PYTHONPATH:$QGISBASE/Contents/Resources/python 
       export QGISHOME=$QGISBASE/Contents/MacOS
      else
       # setup for a Linux/Unix variant
@@ -21,6 +21,6 @@ else
       export PYTHONPATH=$PYTHONPATH:$QGISBASE/share/qgis/python 
       export QGISHOME=$QGISBASE
     fi
-  ./GeoApt.py
+ python2.5  ./GeoApt.py
 fi
 
