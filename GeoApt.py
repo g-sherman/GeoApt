@@ -28,7 +28,7 @@ if qgis_prefix == None:
             break
 
     if qgis_prefix == None:
-      print "Unable to find QGIS install.\nPlease set QGISHOME to point to the directory where QGIS is installed"
+      print QCoreApplication.translate("GeoApt","Unable to find QGIS install.\nPlease set QGISHOME to point to the directory where QGIS is installed")
       sys.exit(1)
 
     print "QGIS prefix is %s" % qgis_prefix
@@ -78,7 +78,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.setupUi(self)
 
     # Set the title for the app
-    self.setWindowTitle("GeoApt Data Browser")
+    self.setWindowTitle(QCoreApplication.translate("GeoApt","GeoApt Data Browser"))
 
     # create the widgets
     self.layout = QHBoxLayout(self.frame)

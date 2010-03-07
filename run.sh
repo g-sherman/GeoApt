@@ -5,8 +5,10 @@
 # Licensed under the terms of GNU GPL 2
 if [ -z "$1" ]
 then
-  echo "Specify the full path to your QGIS 1.0.x install."
-  echo "(Hint: On a Mac this will be something like /Applications/Qgis.app)"
+  echo "Specify the full path to your QGIS 1.x install."
+  echo "Hint: On a Mac this will be something like /Applications/Qgis.app"
+  echo "      If you have built using CMake you will have to adjust this script"
+  echo "Hint: On Linux specify the directory containing bin/qgis. e.g. /usr or /usr/local"
 else
   QGISBASE=$1
     if echo "$OSTYPE" | grep -q "darwin"
