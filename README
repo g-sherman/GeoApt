@@ -18,7 +18,7 @@ All code is licensed under the GNU GPL version 2.
   requirements.
 
 **Running GEOAPT Spatial Data Browser
-  At present, GeoApt runs as a Python script. There are now binary applications
+  At present, GeoApt runs as a Python script. There are no binary applications
   (.exe or .app) for Windows or Mac.
 
   * Linux or Mac OS X
@@ -34,3 +34,6 @@ All code is licensed under the GNU GPL version 2.
           set QGISHOME=c:\osgeo4w\apps\qgis-unstable        
     These settings assume your OSGeo4w install uses the default location. If
     not, adjust accordingly.
+**Resources
+  * Mailing list: http://groups.google.com/group/geoapt-browser
+  * Download: http://mrcc.com/geoapt-browser
