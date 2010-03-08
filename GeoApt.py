@@ -179,6 +179,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # make the connections for the theme treeview
     self.themeTree.setContextMenuPolicy(Qt.CustomContextMenu) 
     self.connect(self.themeTree, SIGNAL("customContextMenuRequested(const QPoint &)"), self.theme_tree_popup) 
+    self.connect(self.themeTree, SIGNAL("itemClicked(QTreeWidgetItem*, int)"), self.show_theme)
     
 
     # set up the actions
@@ -321,6 +322,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for theme in child_themes:
             theme_strings = QStringList()
             theme_strings << theme.name
+            theme_strings << theme.path
             theme_strings << str(theme.id)
             QTreeWidgetItem(new_folder, theme_strings)
         #self.themeTree.insertTopLevelItems(string_list)
@@ -343,7 +345,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
   def zoomFull(self):
     self.canvas.zoomToFullExtent()
 
-
+  def show_theme(self, item, column):
+      print "Theme clicked is %s" % item.data(0, Qt.DisplayRole).toString()
+      print "Theme path is %s" % item.data(1, Qt.DisplayRole).toString()
+      self.statusBar().showMessage(item.data(1, Qt.DisplayRole).toString())
+      self.render_layer(item.data(1, Qt.DisplayRole).toString(), item.data(0, Qt.DisplayRole).toString())
+      
   def showData(self, index):
     #treeview.setPath(self.model.filePath(index))
 
@@ -356,15 +363,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # set the name of the dir in the status bar
         print "user selected ", self.model.filePath(index)
     else:
+        self.render_layer(self.model.filePath(index), self.model.fileName(index))
 
-      print self.model.filePath(index),self.model.fileName(index)
+  def render_layer(self, path, layer_name):
+      print "Rendering %s" % path
       # get the extension
-      file_info = QFileInfo(self.model.fileName(index))
+      file_info = QFileInfo(path)
       suffix = file_info.suffix()
       # determine layer type
       if str(suffix).lower() in self.supported_rasters:
         # add the raster layer
-        self.layer = QgsRasterLayer(self.model.filePath(index), self.model.fileName(index))
+        self.layer = QgsRasterLayer(path, layer_name)
         # Add layer to the registry
         QgsMapLayerRegistry.instance().addMapLayer(self.layer);
 
@@ -378,7 +387,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
       else:
         if str(suffix).lower() in self.supported_vectors:
           # Add the layer
-          self.layer = QgsVectorLayer(self.model.filePath(index), self.model.fileName(index), "ogr")
+          self.layer = QgsVectorLayer(path, layer_name, "ogr")
 
           if not self.layer.isValid():
             return
@@ -595,26 +604,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     print "dock destroyed"
 
   def theme_tree_popup(self, pos):
-    index = self.themeTree.indexAt(pos)
-    if not index.isValid(): 
-        return 
-    print "Index type is %s" % type(index)
-    print index.data().toString()
-    name = index.data().toString()
-    id = index.data(Qt.UserRole +1).toInt()
-    print "Type of id is %s" % type(id)
-    print "Caught mouse event for context menu for %s" % name
-    print "Caught mouse event for context menu for id" , id[0]
+    print "parent of right-click item is %s" % self.themeTree.currentItem().parent()
+    if self.themeTree.currentItem().parent() is None:
+        index = self.themeTree.indexAt(pos)
+        if not index.isValid(): 
+            return 
+        print "Index type is %s" % type(index)
+        print index.data().toString()
+        name = index.data().toString()
+        id = index.data(Qt.UserRole +1).toInt()
+        print "Type of id is %s" % type(id)
+        print "Caught mouse event for context menu for %s" % name
+        print "Caught mouse event for context menu for id" , id[0]
 
-    print "Pos type is %s" % type(pos)
-    print "Pos is ", pos
-    self.current_theme = Theme(id[0], name)
-    self.current_index = index
-    pop_menu = QMenu()
-    pop_add = QAction("Add theme...",pop_menu)
-    self.connect(pop_add, SIGNAL("triggered()"), self.add_new_theme)
-    pop_menu.addAction(pop_add)
-    pop_menu.exec_(self.themeTree.mapToGlobal(pos), pop_add)
+        print "Pos type is %s" % type(pos)
+        print "Pos is ", pos
+        self.current_theme = Theme(id[0], name)
+        self.current_index = index
+        pop_menu = QMenu()
+        pop_add = QAction("Add theme...",pop_menu)
+        self.connect(pop_add, SIGNAL("triggered()"), self.add_new_theme)
+        pop_menu.addAction(pop_add)
+        pop_menu.exec_(self.themeTree.mapToGlobal(pos), pop_add)
 
 
 
@@ -624,12 +635,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #QMessageBox.information(self, "Themes","Will now add a theme folder: %s" % add_theme_folder.folder_name.text())    
         folder_name = add_theme_folder.folder_name.text()
         if len(folder_name) > 0:
-            new_folder = QStandardItem(add_theme_folder.folder_name.text())
             # add to the database
             id = ThemeDatabase.add_folder(self.db, folder_name)
             print "Setting id for new folder to %i" % id
-            new_folder.setData(QVariant(id))
-            self.themeModel.invisibleRootItem().appendRow(new_folder)
+            new_folder = QStringList()
+            new_folder << folder_name
+            new_folder << str(id)
+            QTreeWidgetItem(self.themeTree, new_folder)
+            self.themeTree.sortItems(0, Qt.AscendingOrder)
 
   def add_new_theme(self):
       print "adding new theme to folder %s with id %i\n" % (self.current_theme.name, self.current_theme.id)
@@ -638,14 +651,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
       add_theme.label_folder_name.setText(self.current_theme.name)
       if add_theme.exec_() == QDialog.Accepted:
           theme_name = add_theme.led_theme_name.text()
+          theme_path = add_theme.led_path_name.text()
           if len(theme_name) > 0:
               # get the current item
               current_item = self.themeTree.currentItem()
               parent_id = current_item.data(1, Qt.DisplayRole)
               print "ID for parent is %i" %  parent_id.toInt()[0]
-              id = ThemeDatabase.add_theme(self.db, theme_name, parent_id.toInt()[0])
+              id = ThemeDatabase.add_theme(self.db, theme_name, theme_path, parent_id.toInt()[0])
               string_list = QStringList()
               string_list << theme_name
+              string_list << theme_path
               string_list << str(id)
               new_theme = QTreeWidgetItem(self.themeTree.currentItem(), string_list)
 
