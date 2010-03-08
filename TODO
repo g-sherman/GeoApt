@@ -4,6 +4,8 @@
 * Support for more data types
 * Drag and Drop - DONE
 * Theme catalog tree 
+  * Drag to add a theme
+  * Drag from theme tree to qgis/other apps
 * Custom icons by data type
 * Licenses
 
