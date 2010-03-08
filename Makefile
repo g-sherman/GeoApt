@@ -2,7 +2,7 @@
 # Copyright (C) 2010 Gary Sherman
 # Licensed under the terms of GNU GPL 2
 
-VERSION = 0.1
+VERSION = 0.1.1
 #
 # Build UI files and resources
 UISOURCES = mainwindow_ui.py resources.py dlgAddThemeFolder_ui.py dlgAddTheme_ui.py

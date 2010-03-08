@@ -1,3 +1,5 @@
+# Copyright (C) 2008-2010 Gary Sherman
+# Licensed under the terms of GNU GPL 2
 from theme import *
 # Schema for the theme database
 class ThemeDatabase:
@@ -20,10 +22,10 @@ class ThemeDatabase:
         return cursor.lastrowid
 
     @classmethod
-    def add_theme(self, db, theme_name, parent_id):
+    def add_theme(self, db, theme_name, theme_path, parent_id):
         print "Adding theme to database\n"
         cursor = db.cursor()
-        cursor.execute("insert into themes (name, parent_id) values('%s', %i)" % (theme_name, parent_id))
+        cursor.execute("insert into themes (name, path, parent_id) values('%s','%s', %i)" % (theme_name, theme_path, parent_id))
         db.commit()
         return cursor.lastrowid
 
