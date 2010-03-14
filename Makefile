@@ -11,6 +11,7 @@ SOURCES = GeoApt.py \
 	add_theme_folder.py \
 	theme.py \
 	theme_database.py \
+	theme_tree.py \
 	run.sh \
 	run.cmd \
 	README
