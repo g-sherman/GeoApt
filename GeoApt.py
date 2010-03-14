@@ -30,7 +30,7 @@ if qgis_prefix == None:
 
     if qgis_prefix == None:
       #print QCoreApplication.translate("GeoApt","Unable to find QGIS install.\nPlease set QGISHOME to point to the directory where QGIS is installed")
-      print il8n("GeoApt","Unable to find QGIS install.\nPlease set QGISHOME to point to the directory where QGIS is installed")
+      print QCoreApplication.translate("GeoApt","Unable to find QGIS install.\nPlease set QGISHOME to point to the directory where QGIS is installed")
       sys.exit(1)
 
     print "QGIS prefix is %s" % qgis_prefix
@@ -67,6 +67,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     if have_osgeo:
         self.supported_rasters = self.raster_extensions() 
     else:
+        print "GDAL Python bindings not available, setting default raster support"
         self.supported_rasters = ['tif', 'tiff', 'png', 'jpg', 'gif']
     # the list of supported vectors
     self.supported_vectors = 'shp', 'tab', 'mif', 'vrt', 'dgn', 'csv', 'kml', 'gmt'  
@@ -105,8 +106,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     #model.setFilter(QDir.AllDirs)
     # FIXME - add the list to an about dialog so the user can see what file types are supported
     #         rather than printing to shell at startup
-    for filt in self.model.nameFilters():
-      print filt
+    #for filt in self.model.nameFilters():
+    #  print filt
 
     self.treeview.setModel(self.model)
     #treeview.show()
@@ -215,10 +216,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     menu_bar = QMenuBar()
     self.menu = self.setMenuBar(menu_bar)
+
     menu_file = menu_bar.addMenu(QCoreApplication.translate("GeoApt", "File"))
     exit_action = QAction(QCoreApplication.translate("GeoApt", "Exit"), self)
     self.connect(exit_action, SIGNAL("triggered()"), self.exit_gndb)
     menu_file.addAction(exit_action)
+
     menu_theme = menu_bar.addMenu(QCoreApplication.translate("GeoApt", "Theme"))
     theme_new_folder_action = QAction(QCoreApplication.translate("GeoApt", "Add new folder..."), self)
     self.connect(theme_new_folder_action, SIGNAL("triggered()"), self.new_theme_folder)

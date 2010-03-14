@@ -5,7 +5,7 @@
 VERSION = 0.1.2
 #
 # Build UI files and resources
-UISOURCES = mainwindow_ui.py resources.py dlgAddThemeFolder_ui.py dlgAddTheme_ui.py
+UISOURCES = mainwindow_ui.py resources.py dlgAddThemeFolder_ui.py dlgAddTheme_ui.py dlgAboutGeoApt_ui.py
 SOURCES = GeoApt.py \
 	add_theme.py \
 	add_theme_folder.py \
