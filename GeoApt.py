@@ -13,8 +13,7 @@ import sqlite3
 from add_theme_folder import *
 from add_theme import *
 from theme_tree import *
-version = " - 0.1.2 (2010-03-15) "
-# FIXME - this whole detection of qgis location needs reworking. Currently it is not platform independent 
+import geoapt_version 
 # Environment variable QGISHOME must be set to the 1.0.x install directory
 # before running this application
 qgis_prefix = os.getenv("QGISHOME")
@@ -23,31 +22,28 @@ if qgis_prefix == None:
     # Try to locate the qgis directory
     paths = os.environ['PATH'].split(os.pathsep)
     for path in paths:
-        if os.path.exists(os.path.join(path, 'qgis')):
+        if os.path.exists(os.path.join(path, 'Qgis')) or os.path.exists(os.path.join(path, 'QGIS')):
             # pop the last part of the path (presumably 'bin')
             qgis_prefix = os.path.dirname(path)
-            break
+            # if on OS X (darwin), pop the Contents part of the path too
+            if sys.platform == 'darwin':
+                qgis_prefix = os.path.dirname(qgis_prefix)
+            print "It looks like the path to QGIS is: %s\n" % qgis_prefix
+            print "To start GeoApt, please use the run.sh script:\n"
+            print "  ./run.sh %s\n" % qgis_prefix
+    # exit after friendly message
+    sys.exit(1)
 
-    if qgis_prefix == None:
-      #print QCoreApplication.translate("GeoApt","Unable to find QGIS install.\nPlease set QGISHOME to point to the directory where QGIS is installed")
-      print QCoreApplication.translate("GeoApt","Unable to find QGIS install.\nPlease set QGISHOME to point to the directory where QGIS is installed")
-      sys.exit(1)
-
-    print "QGIS prefix is %s" % qgis_prefix
-
-    # set up environment based on the qgis prefix
-
-    os.environ['LD_LIBRARY_PATH'] = os.path.join(qgis_prefix, 'lib')
-    os.system("export LD_LIBRARY_PATH=%s" % os.path.join(qgis_prefix,'lib'))
-    sys.path.append(os.path.join(qgis_prefix, 'share','qgis','python'))
-    os.environ['QGISHOME'] = qgis_prefix
-    import runpy
-    ## respawn
-    print "respawning..."
-    runpy.run_module('GeoApt', run_name="__main__")
 # qgis_prefix is set - finish imports
-from qgis.core import *
-from qgis.gui import *
+try:
+    from qgis.core import *
+    from qgis.gui import *
+except ImportError as ie_error:
+    print "Unable to import the QGIS libraries: %s" % ie_error
+    print """Make sure LD_LIBRARY_PATH or DYLD_LIBRARY_PATH points 
+to the location of the QGIS shared libraries"""
+    sys.exit(1)
+
 try:
     from osgeo import gdal
     have_osgeo = True
@@ -738,7 +734,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     return self.driver_list
 
   def help_about(self):
-      QMessageBox.information(self, QCoreApplication.translate("GeoApt", "About"), QCoreApplication.translate("GeoApt", "GeoApt Geospatial Data Browser") + version + "\n" + "(C) Micro Resources 2010\nhttp://mrcc.com/geoapt-browser")
+      QMessageBox.information(self, QCoreApplication.translate("GeoApt", "About"), QCoreApplication.translate("GeoApt", "GeoApt Geospatial Data Browser") + geoapt_version.VERSION + "\n" + geoapt_version.COPYRIGHT + "\n" + geoapt_version.WEBSITE)
 
 
 
