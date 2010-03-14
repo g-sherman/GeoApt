@@ -2,7 +2,7 @@
 # Copyright (C) 2010 Gary Sherman
 # Licensed under the terms of GNU GPL 2
 
-VERSION = 0.1.2
+VERSION = 0.1.3
 #
 # Build UI files and resources
 UISOURCES = mainwindow_ui.py resources.py dlgAddThemeFolder_ui.py dlgAddTheme_ui.py dlgAboutGeoApt_ui.py
@@ -29,6 +29,8 @@ resources.py: resources.qrc
 	pyrcc4 -o resources.py resources.qrc
 
 dist: all
+	DATE= date "+ %Y-%m-%d"
+	ZIPFILE=geapt_$(VERSION)_$(DATE).zip
 	rm -f geoapt_$(VERSION).zip
 	rm -rf ./geoapt_$(VERSION)
 	mkdir -p geoapt_$(VERSION)
