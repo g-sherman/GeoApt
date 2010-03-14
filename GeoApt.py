@@ -13,8 +13,7 @@ import sqlite3
 from add_theme_folder import *
 from add_theme import *
 from theme_tree import *
-version = " - 0.1.2 (2010-03-15) "
-# FIXME - this whole detection of qgis location needs reworking. Currently it is not platform independent 
+import geoapt_version 
 # Environment variable QGISHOME must be set to the 1.0.x install directory
 # before running this application
 qgis_prefix = os.getenv("QGISHOME")
@@ -23,31 +22,28 @@ if qgis_prefix == None:
     # Try to locate the qgis directory
     paths = os.environ['PATH'].split(os.pathsep)
     for path in paths:
-        if os.path.exists(os.path.join(path, 'qgis')):
+        if os.path.exists(os.path.join(path, 'Qgis')) or os.path.exists(os.path.join(path, 'QGIS')):
             # pop the last part of the path (presumably 'bin')
             qgis_prefix = os.path.dirname(path)
-            break
+            # if on OS X (darwin), pop the Contents part of the path too
+            if sys.platform == 'darwin':
+                qgis_prefix = os.path.dirname(qgis_prefix)
+            print "It looks like the path to QGIS is: %s\n" % qgis_prefix
+            print "To start GeoApt, please use the run.sh script:\n"
+            print "  ./run.sh %s\n" % qgis_prefix
+    # exit after friendly message
+    sys.exit(1)
 
-    if qgis_prefix == None:
-      #print QCoreApplication.translate("GeoApt","Unable to find QGIS install.\nPlease set QGISHOME to point to the directory where QGIS is installed")
-      print il8n("GeoApt","Unable to find QGIS install.\nPlease set QGISHOME to point to the directory where QGIS is installed")
-      sys.exit(1)
-
-    print "QGIS prefix is %s" % qgis_prefix
-
-    # set up environment based on the qgis prefix
-
-    os.environ['LD_LIBRARY_PATH'] = os.path.join(qgis_prefix, 'lib')
-    os.system("export LD_LIBRARY_PATH=%s" % os.path.join(qgis_prefix,'lib'))
-    sys.path.append(os.path.join(qgis_prefix, 'share','qgis','python'))
-    os.environ['QGISHOME'] = qgis_prefix
-    import runpy
-    ## respawn
-    print "respawning..."
-    runpy.run_module('GeoApt', run_name="__main__")
 # qgis_prefix is set - finish imports
-from qgis.core import *
-from qgis.gui import *
+try:
+    from qgis.core import *
+    from qgis.gui import *
+except ImportError as ie_error:
+    print "Unable to import the QGIS libraries: %s" % ie_error
+    print """Make sure LD_LIBRARY_PATH or DYLD_LIBRARY_PATH points 
+to the location of the QGIS shared libraries"""
+    sys.exit(1)
+
 try:
     from osgeo import gdal
     have_osgeo = True
@@ -67,6 +63,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     if have_osgeo:
         self.supported_rasters = self.raster_extensions() 
     else:
+        print "GDAL Python bindings not available, setting default raster support"
         self.supported_rasters = ['tif', 'tiff', 'png', 'jpg', 'gif']
     # the list of supported vectors
     self.supported_vectors = 'shp', 'tab', 'mif', 'vrt', 'dgn', 'csv', 'kml', 'gmt'  
@@ -103,8 +100,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     self.model = QDirModel(filter, QDir.Files|QDir.AllDirs|QDir.NoDotAndDotDot, QDir.Name)
     #model.setFilter(QDir.AllDirs)
-    for filt in self.model.nameFilters():
-      print filt
+    # FIXME - add the list to an about dialog so the user can see what file types are supported
+    #         rather than printing to shell at startup
+    #for filt in self.model.nameFilters():
+    #  print filt
 
     self.treeview.setModel(self.model)
     #treeview.show()
@@ -128,57 +127,50 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.canvas.setMinimumSize(400,400)
     #self.canvas.show()
 
-    self.tabWidget = QTabWidget()
-    self.tabWidget.addTab(self.treeview, QCoreApplication.translate("GeoApt", "Directories"))
+    self.tab_widget = QTabWidget()
+    self.tab_widget.addTab(self.treeview, QCoreApplication.translate("GeoApt", "Directories"))
 
     # create the tab and frame for the themes
-    self.themesFrame = QFrame()
-    self.tabWidget.addTab(self.themesFrame, QCoreApplication.translate("GeoApt", "Themes"))
+    self.themes_frame = QFrame()
+    self.tab_widget.addTab(self.themes_frame, QCoreApplication.translate("GeoApt", "Themes"))
     # enable drop
-    self.themesFrame.setAcceptDrops(True)
+    self.themes_frame.setAcceptDrops(True)
     # setup the model for displaying themes
-    self.themeModel = QStandardItemModel()
-    #parentItem = self.themeModel.invisibleRootItem()
-    #item = QStandardItem("item 1")
-    #parentItem.appendRow(item);
-    #parentItem = item;
-    #item = QStandardItem("item 2")
-    #parentItem.appendRow(item);
-    #parentItem = item;
+    self.theme_model = QStandardItemModel()
+
     # setup the view
-    themeGridLayout = QGridLayout(self.themesFrame)
+    theme_grid_layout = QGridLayout(self.themes_frame)
     # setup the toolbar for the theme tab
-    self.themeToolbar = QToolBar(QCoreApplication.translate("GeoApt", "Theme Tools"))
+    self.theme_toolbar = QToolBar(QCoreApplication.translate("GeoApt", "Theme Tools"))
     # Add the map actions to the toolbar
     self.themeAdd = QAction(QIcon(":/qgisbrowser/mActionAddTheme.png"), \
-        "Add a new theme folder", self.themeToolbar)
-    self.themeToolbar.addAction(self.themeAdd)
+        "Add a new theme folder", self.theme_toolbar)
+    self.theme_toolbar.addAction(self.themeAdd)
     self.connect(self.themeAdd, SIGNAL("activated()"), self.new_theme_folder)
-    themeGridLayout.addWidget(self.themeToolbar)
-    self.themeTree = ThemeTree()
-    self.themeTree.setHeaderHidden(True)
-    # using treewidget instead of model/view -- self.themeTree.setModel(self.themeModel)
-    themeGridLayout.addWidget(self.themeTree)
+    theme_grid_layout.addWidget(self.theme_toolbar)
+    self.theme_tree = ThemeTree()
+    self.theme_tree.setHeaderHidden(True)
+    # using treewidget instead of model/view for themes
+    theme_grid_layout.addWidget(self.theme_tree)
     theme_info = QLabel(QCoreApplication.translate("GeoApt", "Right-click on a folder to add themes"))
-    themeGridLayout.addWidget(theme_info)
+    theme_grid_layout.addWidget(theme_info)
 
 
     # enable drag
-    self.themeTree.setDragEnabled(True)
-    self.themeTree.setDropIndicatorShown(True)
-    self.themeTree.setDragDropMode(QAbstractItemView.DragOnly)
-    for t in self.themeTree.mimeTypes():
+    self.theme_tree.setDragEnabled(True)
+    self.theme_tree.setDropIndicatorShown(True)
+    self.theme_tree.setDragDropMode(QAbstractItemView.DragOnly)
+    # XXX Following two lines are for debug of drag from the theme tree
+    for t in self.theme_tree.mimeTypes():
         print t
     
-
-    
     self.dataFrame = QFrame()
-    self.tabWidget.addTab(self.dataFrame, QCoreApplication.translate("GeoApt", "Databases"))
+    self.tab_widget.addTab(self.dataFrame, QCoreApplication.translate("GeoApt", "Databases"))
     # database feature is not implemented so put a label on it for now
     QLabel(QCoreApplication.translate("GeoApt", "Not Implemented"), self.dataFrame)
 
 
-    self.splitter.addWidget(self.tabWidget)
+    self.splitter.addWidget(self.tab_widget)
 
 
     #self.splitter.addWidget(self.treeview)
@@ -191,39 +183,41 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     self.connect(self.treeview, SIGNAL("clicked(const QModelIndex&)"), self.showData)
 
     # make the connections for the theme treeview
-    self.themeTree.setContextMenuPolicy(Qt.CustomContextMenu) 
-    self.connect(self.themeTree, SIGNAL("customContextMenuRequested(const QPoint &)"), self.theme_tree_popup) 
-    self.connect(self.themeTree, SIGNAL("itemClicked(QTreeWidgetItem*, int)"), self.show_theme)
+    self.theme_tree.setContextMenuPolicy(Qt.CustomContextMenu) 
+    self.connect(self.theme_tree, SIGNAL("customContextMenuRequested(const QPoint &)"), self.theme_tree_popup) 
+    self.connect(self.theme_tree, SIGNAL("itemClicked(QTreeWidgetItem*, int)"), self.show_theme)
     
 
     # set up the actions
-    self.actionZoomIn = QAction(QIcon(":/qgisbrowser/mActionZoomIn.png"), \
+    self.action_zoomin = QAction(QIcon(":/qgisbrowser/mActionZoomIn.png"), \
         QCoreApplication.translate("GeoApt", "Zoom In"), self.frame)
-    self.connect(self.actionZoomIn, SIGNAL("activated()"), self.zoomIn)
-    self.actionZoomOut = QAction(QIcon(":/qgisbrowser/mActionZoomOut.png"), \
+    self.connect(self.action_zoomin, SIGNAL("activated()"), self.zoomIn)
+    self.action_zoomout = QAction(QIcon(":/qgisbrowser/mActionZoomOut.png"), \
         QCoreApplication.translate("GeoApt", "Zoom Out"), self.frame)
-    self.connect(self.actionZoomOut, SIGNAL("activated()"), self.zoomOut)
-    self.actionPan = QAction(QIcon(":/qgisbrowser/mActionPan.png"), \
+    self.connect(self.action_zoomout, SIGNAL("activated()"), self.zoomOut)
+    self.action_pan = QAction(QIcon(":/qgisbrowser/mActionPan.png"), \
         QCoreApplication.translate("GeoApt", "Pan"), self.frame)
-    self.connect(self.actionPan, SIGNAL("activated()"), self.pan)
-    self.actionZoomFull = QAction(QIcon(":/qgisbrowser/mActionZoomFullExtent.png"), \
+    self.connect(self.action_pan, SIGNAL("activated()"), self.pan)
+    self.action_zoomfull = QAction(QIcon(":/qgisbrowser/mActionZoomFullExtent.png"), \
         QCoreApplication.translate("GeoApt", "Zoom Full Extent"), self.frame)
-    self.connect(self.actionZoomFull, SIGNAL("activated()"), self.zoomFull)
+    self.connect(self.action_zoomfull, SIGNAL("activated()"), self.zoomFull)
 
-    self.actionMetadata = QAction(QIcon(":/qgisbrowser/mActionMetadata.png"), \
+    self.action_metadata = QAction(QIcon(":/qgisbrowser/mActionMetadata.png"), \
         QCoreApplication.translate("GeoApt", "Properties"), self.frame)
-    self.connect(self.actionMetadata, SIGNAL("activated()"), self.metadata)
+    self.connect(self.action_metadata, SIGNAL("activated()"), self.metadata)
 
-    self.actionOpenFolder = QAction(QIcon(":/qgisbrowser/mActionOpenFolder.png"), \
+    self.action_open_folder = QAction(QIcon(":/qgisbrowser/mActionOpenFolder.png"), \
         QCoreApplication.translate("GeoApt", "Open Folder"), self.frame)
-    self.connect(self.actionOpenFolder, SIGNAL("activated()"), self.openFolder)
+    self.connect(self.action_open_folder, SIGNAL("activated()"), self.openFolder)
 
     menu_bar = QMenuBar()
     self.menu = self.setMenuBar(menu_bar)
+
     menu_file = menu_bar.addMenu(QCoreApplication.translate("GeoApt", "File"))
     exit_action = QAction(QCoreApplication.translate("GeoApt", "Exit"), self)
     self.connect(exit_action, SIGNAL("triggered()"), self.exit_gndb)
     menu_file.addAction(exit_action)
+
     menu_theme = menu_bar.addMenu(QCoreApplication.translate("GeoApt", "Theme"))
     theme_new_folder_action = QAction(QCoreApplication.translate("GeoApt", "Add new folder..."), self)
     self.connect(theme_new_folder_action, SIGNAL("triggered()"), self.new_theme_folder)
@@ -246,30 +240,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # Create the map toolbar
     self.toolbar = self.addToolBar(QCoreApplication.translate("GeoApt", "Map"))
     # Add the map actions to the toolbar
-    self.toolbar.addAction(self.actionZoomIn)
-    self.toolbar.addAction(self.actionZoomOut)
-    self.toolbar.addAction(self.actionPan)
-    self.toolbar.addAction(self.actionZoomFull)
-    self.toolbar.addAction(self.actionMetadata)
+    self.toolbar.addAction(self.action_zoomin)
+    self.toolbar.addAction(self.action_zoomout)
+    self.toolbar.addAction(self.action_pan)
+    self.toolbar.addAction(self.action_zoomfull)
+    self.toolbar.addAction(self.action_metadata)
 
     # Create the map tools
-    self.toolPan = QgsMapToolPan(self.canvas)
-    self.toolZoomIn = QgsMapToolZoom(self.canvas, False) # false = in
-    self.toolZoomOut = QgsMapToolZoom(self.canvas, True) # true = out
+    self.tool_pan = QgsMapToolPan(self.canvas)
+    self.tool_zoomin = QgsMapToolZoom(self.canvas, False) # false = in
+    self.tool_zoomout = QgsMapToolZoom(self.canvas, True) # true = out
 
     # Create the favorites/file management toolbar
-    self.fileToolbar = self.addToolBar(QCoreApplication.translate("GeoApt", "File"))
-    self.historyCombo = QComboBox()
-    self.connect(self.historyCombo, SIGNAL("currentIndexChanged(const QString&)"), self.setFolder)
-    self.historyCombo.setMinimumWidth(280)
-    self.historyCombo.setEditable(True)
+    self.file_toolbar = self.addToolBar(QCoreApplication.translate("GeoApt", "File"))
+    self.history_combobox = QComboBox()
+    self.connect(self.history_combobox, SIGNAL("currentIndexChanged(const QString&)"), self.setFolder)
+    self.history_combobox.setMinimumWidth(280)
+    self.history_combobox.setEditable(True)
     # label for the combo
-    self.historyLabel = QLabel()
-    self.historyLabel.setText(QCoreApplication.translate("GeoApt", 'Directories:'))
-    self.fileToolbar.addWidget(self.historyLabel)
+    self.history_label = QLabel()
+    self.history_label.setText(QCoreApplication.translate("GeoApt", 'Directories:'))
+    self.file_toolbar.addWidget(self.history_label)
     
-    self.fileToolbar.addWidget(self.historyCombo)
-    self.fileToolbar.addAction(self.actionOpenFolder)
+    self.file_toolbar.addWidget(self.history_combobox)
+    self.file_toolbar.addAction(self.action_open_folder)
 
     # Create the database management toolbar
     #self.databaseToolbar = self.addToolBar("Database")
@@ -293,10 +287,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     settings = QSettings()
     history_list = settings.value('history/folders').toList()
     for folder in history_list:
-        self.historyCombo.addItem(folder.toString())
+        self.history_combobox.addItem(folder.toString())
 
-    if self.historyCombo.findText(self.root) == -1:
-      self.historyCombo.addItem(self.root)
+    if self.history_combobox.findText(self.root) == -1:
+      self.history_combobox.addItem(self.root)
     # resize the name column to contents
     self.treeview.resizeColumnToContents(0)
 
@@ -338,7 +332,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         string_list = QStringList()
         string_list << folder.name
         string_list << str(folder.id)
-        new_folder = QTreeWidgetItem(self.themeTree, string_list)
+        new_folder = QTreeWidgetItem(self.theme_tree, string_list)
         # set folders to be non-draggable
         new_folder.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
         # get the folders subitems
@@ -350,21 +344,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             theme_strings << str(theme.id)
             new_item = QTreeWidgetItem(new_folder, theme_strings)
             #new_item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled)
-        #self.themeTree.insertTopLevelItems(string_list)
+        #self.theme_tree.insertTopLevelItems(string_list)
 
 
 
   # Set the map tool to zoom in
   def zoomIn(self):
-    self.canvas.setMapTool(self.toolZoomIn)
+    self.canvas.setMapTool(self.tool_zoomin)
 
   # Set the map tool to zoom out
   def zoomOut(self):
-    self.canvas.setMapTool(self.toolZoomOut)
+    self.canvas.setMapTool(self.tool_zoomout)
 
   # Set the map tool to 
   def pan(self):
-    self.canvas.setMapTool(self.toolPan)
+    self.canvas.setMapTool(self.tool_pan)
 
   # Zoom to full extent of layer
   def zoomFull(self):
@@ -473,8 +467,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # set the column width to contents for the name
     self.treeview.resizeColumnToContents(0)
     # add the folder to the drop-down list
-    if self.historyCombo.findText(folder) == -1:
-      self.historyCombo.addItem(folder)
+    if self.history_combobox.findText(folder) == -1:
+      self.history_combobox.addItem(folder)
       # store it to the preferences
 
 
@@ -633,9 +627,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     print "dock destroyed"
 
   def theme_tree_popup(self, pos):
-    print "parent of right-click item is %s" % self.themeTree.currentItem().parent()
-    if self.themeTree.currentItem().parent() is None:
-        index = self.themeTree.indexAt(pos)
+    print "parent of right-click item is %s" % self.theme_tree.currentItem().parent()
+    if self.theme_tree.currentItem().parent() is None:
+        index = self.theme_tree.indexAt(pos)
         if not index.isValid(): 
             return 
         print "Index type is %s" % type(index)
@@ -654,7 +648,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         pop_add = QAction("Add theme...",pop_menu)
         self.connect(pop_add, SIGNAL("triggered()"), self.add_new_theme)
         pop_menu.addAction(pop_add)
-        pop_menu.exec_(self.themeTree.mapToGlobal(pos), pop_add)
+        pop_menu.exec_(self.theme_tree.mapToGlobal(pos), pop_add)
 
 
 
@@ -670,8 +664,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             new_folder = QStringList()
             new_folder << folder_name
             new_folder << str(id)
-            QTreeWidgetItem(self.themeTree, new_folder)
-            self.themeTree.sortItems(0, Qt.AscendingOrder)
+            QTreeWidgetItem(self.theme_tree, new_folder)
+            self.theme_tree.sortItems(0, Qt.AscendingOrder)
 
   def add_new_theme(self):
       print "adding new theme to folder %s with id %i\n" % (self.current_theme.name, self.current_theme.id)
@@ -683,7 +677,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
           theme_path = add_theme.led_path_name.text()
           if len(theme_name) > 0:
               # get the current item
-              current_item = self.themeTree.currentItem()
+              current_item = self.theme_tree.currentItem()
               parent_id = current_item.data(1, Qt.DisplayRole)
               print "ID for parent is %i" %  parent_id.toInt()[0]
               id = ThemeDatabase.add_theme(self.db, theme_name, theme_path, parent_id.toInt()[0])
@@ -691,7 +685,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
               string_list << theme_name
               string_list << theme_path
               string_list << str(id)
-              new_theme = QTreeWidgetItem(self.themeTree.currentItem(), string_list)
+              new_theme = QTreeWidgetItem(self.theme_tree.currentItem(), string_list)
 
 
 
@@ -712,9 +706,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     QCoreApplication.setApplicationName("GeoApt")
     settings = QSettings()
     history_list = list()
-    for i in range(self.historyCombo.count()):
-        print "adding %s to the history list" % self.historyCombo.itemText(i)
-        history_list.append(self.historyCombo.itemText(i))
+    for i in range(self.history_combobox.count()):
+        print "adding %s to the history list" % self.history_combobox.itemText(i)
+        history_list.append(self.history_combobox.itemText(i))
 
     settings.setValue('history/folders', history_list)
     #pyqtRemoveInputHook()
@@ -740,7 +734,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     return self.driver_list
 
   def help_about(self):
-      QMessageBox.information(self, QCoreApplication.translate("GeoApt", "About"), QCoreApplication.translate("GeoApt", "GeoApt Geospatial Data Browser") + version + "\n" + "(C) Micro Resources 2010\nhttp://mrcc.com/geoapt-browser")
+      QMessageBox.information(self, QCoreApplication.translate("GeoApt", "About"), QCoreApplication.translate("GeoApt", "GeoApt Geospatial Data Browser") + geoapt_version.VERSION + "\n" + geoapt_version.COPYRIGHT + "\n" + geoapt_version.WEBSITE)
 
 
 
