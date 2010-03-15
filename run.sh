@@ -37,13 +37,19 @@ fi
     if echo "$OSTYPE" | grep -q "darwin"
     then
       # setup for a Mac
+      echo "Setting DYLD_LIBRARY_PATH to $QGISBASE/Contents/MacOS/lib"
       export DYLD_LIBRARY_PATH=$QGISBASE/Contents/MacOS/lib
+      echo "Setting PYTHONPATH to $PYTHONPATH:$QGISBASE/Contents/Resources/python" 
       export PYTHONPATH=$PYTHONPATH:$QGISBASE/Contents/Resources/python 
+      echo "Setting QGISHOME to $QGISBASE/Contents/MacOS"
       export QGISHOME=$QGISBASE/Contents/MacOS
      else
       # setup for a Linux/Unix variant
+      echo "Setting LD_LIBRARY_PATH to $QGISBASE/lib"
       export LD_LIBRARY_PATH=$QGISBASE/lib
+      echo "Setting PYTHONPATH to $PYTHONPATH:$QGISBASE/share/qgis/python"
       export PYTHONPATH=$PYTHONPATH:$QGISBASE/share/qgis/python 
+      echo "Setting QGISHOME to $QGISBASE"
       export QGISHOME=$QGISBASE
     fi
       echo $DYLD_LIBRARY_PATH
