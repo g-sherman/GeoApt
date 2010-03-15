@@ -13,6 +13,7 @@ import sqlite3
 from add_theme_folder import *
 from add_theme import *
 from theme_tree import *
+from about_geoapt import *
 import geoapt_version 
 # Environment variable QGISHOME must be set to the 1.0.x install directory
 # before running this application
@@ -66,7 +67,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print "GDAL Python bindings not available, setting default raster support"
         self.supported_rasters = ['tif', 'tiff', 'png', 'jpg', 'gif']
     # the list of supported vectors
-    self.supported_vectors = 'shp', 'tab', 'mif', 'vrt', 'dgn', 'csv', 'kml', 'gmt'  
+    self.supported_vectors = ['shp', 'tab', 'mif', 'vrt', 'dgn', 'csv', 'kml', 'gmt']
+    # sort the raster and vector extension lists
+    self.supported_rasters.sort()
+    self.supported_vectors.sort()
+    # Basic geometry types
     self.vector_geometry_types = ['Point', 'Line', 'Polygon']
     self.root = os.getenv("HOME")
     self.dockVisibility = False
@@ -229,9 +234,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     #menu_favorites = menu_bar.addMenu("Favorites")
 
     menu_help = menu_bar.addMenu(QCoreApplication.translate("GeoApt", "Help"))
-    help_about_action = QAction(QCoreApplication.translate("GeoApt", "About"), self)
+    help_about_action = QAction(QCoreApplication.translate("GeoApt", "About GeoApt"), self)
     self.connect(help_about_action, SIGNAL("triggered()"), self.help_about)
     menu_help.addAction(help_about_action)
+    # On OS X add another entry under the help menu (same content as Help|About)
+    if sys.platform == 'darwin':
+      help_info_action = QAction(QCoreApplication.translate("GeoApt", "About GeoApt"), self)
+      self.connect(help_info_action, SIGNAL("triggered()"), self.help_about)
+      menu_help.addAction(help_info_action)
 
     
 
@@ -734,7 +744,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     return self.driver_list
 
   def help_about(self):
-      QMessageBox.information(self, QCoreApplication.translate("GeoApt", "About"), QCoreApplication.translate("GeoApt", "GeoApt Geospatial Data Browser") + geoapt_version.VERSION + "\n" + geoapt_version.COPYRIGHT + "\n" + geoapt_version.WEBSITE)
+    about = AboutGeoApt()
+    about.textBrowser.setText("""<h2>GeoApt</h2>
+                              Version %s""" % geoapt_version.VERSION)
+    about.textBrowser.append("Theme database: %s" % self.dbname)
+    about.textBrowser.append("""<h3>Supported Vector Formats</h3>
+                              <ul>
+                              <li>%s""" % "<li>".join(self.supported_vectors))
+    about.textBrowser.append("""<h3>Supported Raster Formats</h3>
+                             <ul>
+                             <li>%s""" % "<li>".join(self.supported_rasters))
+    if not have_osgeo: 
+        about.textBrowser.append("**The GDAL Python bindings were not found. The list of supported rasters has been set to a minimum.")
+
+    about.exec_()
+      #QMessageBox.information(self, QCoreApplication.translate("GeoApt", "About"), QCoreApplication.translate("GeoApt", "GeoApt Geospatial Data Browser") + geoapt_version.VERSION + "\n" + geoapt_version.COPYRIGHT + "\n" + geoapt_version.WEBSITE)
 
 
 
