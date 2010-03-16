@@ -3,6 +3,13 @@
 # Linux/Unix variants
 # Copyright (C) 2008 Gary Sherman
 # Licensed under the terms of GNU GPL 2
+#
+# If the full path to the QGIS install is specified the script sets 
+# LD_LIBRARY_PATH (DYLD_LIBRARY_PATH on OS X), PYTHONPATH, and QGISHOME
+# and then runs the main script GeoApt.py. If the full path is not 
+# specified on the command line, the script looks for QGIS on the PATH 
+# and sets the environment accordingly. 
+# 
 if [ -z "$1" ]
 then
   # try to find the QGIS path and set the environment
@@ -22,7 +29,7 @@ then
           QGISPATH=${QGISPATH%$STRIP}
           echo "OS X path to QGIS binary: $QGISPATH"
       else
-          STRIP=/qgis
+          STRIP=/bin/qgis
           QGISPATH=${QGISPATH%$STRIP}
       fi
   fi
@@ -48,13 +55,10 @@ fi
       echo "Setting LD_LIBRARY_PATH to $QGISBASE/lib"
       export LD_LIBRARY_PATH=$QGISBASE/lib
       echo "Setting PYTHONPATH to $PYTHONPATH:$QGISBASE/share/qgis/python"
-      export PYTHONPATH=$PYTHONPATH:$QGISBASE/share/qgis/python 
+      export PYTHONPATH=$QGISBASE/share/qgis/python 
       echo "Setting QGISHOME to $QGISBASE"
       export QGISHOME=$QGISBASE
     fi
-      echo $DYLD_LIBRARY_PATH
-      echo $PYTHONPATH
-      echo $QGISHOME
 
    ./GeoApt.py
 

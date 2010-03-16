@@ -8,13 +8,7 @@ Usage:
 from setuptools import setup
 
 APP = ['GeoApt.py']
-DATA_FILES = ['images/mActionAddLayer.png',
- 'images/mActionMetadata.png',
- 'images/mActionOpenFolder.png',
- 'images/mActionPan.png',
- 'images/mActionZoomFullExtent.png',
- 'images/mActionZoomIn.png',
- 'images/mActionZoomOut.png']
+DATA_FILES = []
 OPTIONS = {'argv_emulation': True}
 
 setup(
