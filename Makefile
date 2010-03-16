@@ -7,11 +7,13 @@ VERSION = 0.1.3
 # Build UI files and resources
 UISOURCES = mainwindow_ui.py resources.py dlgAddThemeFolder_ui.py dlgAddTheme_ui.py dlgAboutGeoApt_ui.py
 SOURCES = GeoApt.py \
+					geoapt_version.py \
 					about_geoapt.py \
 					add_theme.py \
 					add_theme_folder.py \
 					theme.py \
 					theme_database.py \
+					theme_tree.py \
 					run.sh \
 					run.cmd \
 					README
