@@ -41,3 +41,8 @@ dist: all
 	cp $(UISOURCES) geoapt_$(VERSION)
 	zip -9v geoapt_$(VERSION).zip geoapt_$(VERSION)/* 
 
+app: all
+	rm -rf build dist
+	python setup.py py2app --includes sip,qgis,PyQt4.QtXml --no-strip
+	macdeployqt-4.6 ./dist/GeoApt.app
+	./fix_names.sh
