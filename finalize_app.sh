@@ -41,3 +41,6 @@ install_name_tool -change /Library/Frameworks/GDAL.framework/Versions/1.7/GDAL @
 install_name_tool -change @executable_path/lib/libqgis_core.1.5.0.dylib @executable_path/lib/libqgis_core.1.5.0.dylib /Users/gsherman/development/geoapt/dist/GeoApt.app/Contents/Resources/lib/python2.6/lib-dynload/qgis/core.so
 install_name_tool -change @executable_path/lib/libqgis_gui.1.5.0.dylib @executable_path/lib/libqgis_gui.1.5.0.dylib /Users/gsherman/development/geoapt/dist/GeoApt.app/Contents/Resources/lib/python2.6/lib-dynload/qgis/gui.so
 
+# copy the plist and icons
+cp $BASEDIR/../../Info.plist $BASEDIR/Contents
+cp $BASEDIR/../../geoapt.icns $BASEDIR/Contents/Resources
