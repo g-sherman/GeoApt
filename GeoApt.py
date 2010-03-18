@@ -17,11 +17,12 @@ from about_geoapt import *
 import geoapt_version 
 # Environment variable QGISHOME must be set to the 1.0.x install directory
 # before running this application
-#qgis_prefix = os.getenv("QGISHOME")
 run_path = sys.argv[0]
 if sys.platform == 'darwin':
     run_path = os.path.dirname(run_path)
     qgis_prefix = os.path.join(os.path.dirname(run_path),'MacOS')
+else:
+    qgis_prefix = os.getenv("QGISHOME")
 
 if qgis_prefix == None:
     print "QGISHOME environment variable not found, looking for QGIS on the PATH"
