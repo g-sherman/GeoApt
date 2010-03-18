@@ -17,7 +17,12 @@ from about_geoapt import *
 import geoapt_version 
 # Environment variable QGISHOME must be set to the 1.0.x install directory
 # before running this application
-qgis_prefix = os.getenv("QGISHOME")
+#qgis_prefix = os.getenv("QGISHOME")
+run_path = sys.argv[0]
+if sys.platform == 'darwin':
+    run_path = os.path.dirname(run_path)
+    qgis_prefix = os.path.join(os.path.dirname(run_path),'MacOS')
+
 if qgis_prefix == None:
     print "QGISHOME environment variable not found, looking for QGIS on the PATH"
     # Try to locate the qgis directory
@@ -33,7 +38,7 @@ if qgis_prefix == None:
             print "To start GeoApt, please use the run.sh script:\n"
             print "  ./run.sh %s\n" % qgis_prefix
     # exit after friendly message
-    sys.exit(1)
+    #sys.exit(1)
 
 # qgis_prefix is set - finish imports
 try:
@@ -80,6 +85,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # Required by Qt4 to initialize the UI
     self.setupUi(self)
+
+    # Some debug stuff used when sorting out the Mac application bundle
+    #QMessageBox.information(self, "GeoApt","Run path is: %s" % sys.argv[0])
+    #QMessageBox.information(self, "GeoApt","qgis_prefix is: %s" % qgis_prefix)
+    #QMessageBox.information(self, "GeoApt","qgis db path is: %s" % QgsApplication.qgisUserDbFilePath())
 
     # Set the title for the app
     self.setWindowTitle(QCoreApplication.translate("GeoApt","GeoApt Data Browser"))
@@ -316,7 +326,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     ## end __init__
   def init_database(self):
-    # Init the sqlite database
+    # Init the sqlite database for theme management
     self.db_base_path = os.path.join(os.environ['HOME'],'.geoapt')
     self.dbname = os.path.join(self.db_base_path,"geoapt.db")
     #print QCoreApplication.translate("GeoApt", "Opening sqlite3 database %s\n") % self.dbname
@@ -333,6 +343,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
          self.db = sqlite3.connect(self.dbname)
 
         #self.db.close()
+    # Check to see if we have a qgis.db (needed for displaying data or the qgis libs assert and crash
+    # geoapt
+    qgis_db_path = str(QgsApplication.qgisUserDbFilePath())
+    qgis_db_base_path = os.path.dirname(qgis_db_path)
+    if not os.path.exists(qgis_db_path):
+        # create an empty database
+        if not os.path.exists(qgis_db_base_path):
+            os.mkdir(qgis_db_base_path)
+        qgis_db = sqlite3.connect(qgis_db_path)
+        QMessageBox.information(self, QCoreApplication.translate("GeoApt", "Spatial Reference Database"),QCoreApplication.translate("GeoApt", "A new spatial reference (SRS) database has been created.\nThis happens the first time you run the application if you don't have QGIS installed.\n\nThe SRS database can be found at:\n") + qgis_db_path)
+
 
   def restore_themes(self):
       # get the dict of theme folders and associated themes
