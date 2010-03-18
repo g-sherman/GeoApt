@@ -45,8 +45,10 @@ app: all
 	rm -rf build dist
 	python setup.py py2app --includes sip,qgis,PyQt4.QtXml --no-strip
 	macdeployqt-4.6 ./dist/GeoApt.app
-	./fix_names.sh
+	./finalize_app.sh
 
 dmg:
-	cp -r data dist
+	#cp -r data dist
+	echo "Removing GeoApt_$(VERSION).dmg if it exists"
+	rm -f GeoApt_$(VERSION).dmg
 	hdiutil create -imagekey zlib-level=9 -srcfolder dist GeoApt_$(VERSION).dmg
