@@ -46,8 +46,8 @@ fi
       # setup for a Mac
       echo "Setting DYLD_LIBRARY_PATH to $QGISBASE/Contents/MacOS/lib"
       export DYLD_LIBRARY_PATH=$QGISBASE/Contents/MacOS/lib
-      echo "Setting PYTHONPATH to $PYTHONPATH:$QGISBASE/Contents/Resources/python" 
-      export PYTHONPATH=$PYTHONPATH:$QGISBASE/Contents/Resources/python 
+      echo "Setting PYTHONPATH to $QGISBASE/Contents/Resources/python:$QGISBASE/Contents/MacOS/share/qgis/python"
+      export PYTHONPATH=$QGISBASE/Contents/Resources/python:$QGISBASE/Contents/MacOS/share/qgis/python
       echo "Setting QGISHOME to $QGISBASE/Contents/MacOS"
       export QGISHOME=$QGISBASE/Contents/MacOS
      else

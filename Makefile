@@ -46,3 +46,7 @@ app: all
 	python setup.py py2app --includes sip,qgis,PyQt4.QtXml --no-strip
 	macdeployqt-4.6 ./dist/GeoApt.app
 	./fix_names.sh
+
+dmg:
+	cp -r data dist
+	hdiutil create -imagekey zlib-level=9 -srcfolder dist GeoApt_$(VERSION).dmg

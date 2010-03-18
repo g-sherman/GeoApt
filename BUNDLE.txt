@@ -1,7 +1,8 @@
 TO create the bundle:
-1. python setup.py py2app --includes qgis,sip,PyQt4.QtXml
-2. Inside the bundle, create Contents/MacOS/lib/qgis
-3. Copy libqgis_core.dylib to lib
-4. Copy OGR provider to lib/qgis 
+1. Set python path so import qgis.core works
+2. do: make app
+3. do: make dmg to create the disk image
 
-TODO: relocate the dependent libs (eg PROJ) in the bundle
+NOTE: make app runs fix_names.sh to relocate the dependent libs (eg Qt, GDAL, GEOS, PROJ) in the bundle
+NOTE: To see what libraries are loading, set DYLD_PRINT_LIBRARIES=1
+
