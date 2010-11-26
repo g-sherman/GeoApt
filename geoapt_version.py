@@ -1,3 +1,6 @@
-VERSION = " - 0.1.3 (2010-03-15) "
-COPYRIGHT = "(C) 2010 Micro Resources"
-WEBSITE = "http://mrcc.com/geoapt-browser"
+from datetime import date
+from subprocess import *
+sha = Popen(["git", "rev-parse", "--short", "HEAD"], stdout=PIPE).communicate()[0]
+VERSION = " - 0.1.4-dev-" + sha
+COPYRIGHT = "(C) 2010 GeoApt LLC"
+WEBSITE = "http://geoapt.com/geoapt-data-browser"

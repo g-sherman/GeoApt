@@ -72,8 +72,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     else:
         print "GDAL Python bindings not available, setting default raster support"
         self.supported_rasters = ['tif', 'tiff', 'png', 'jpg', 'gif']
-    # the list of supported vectors
-    self.supported_vectors = ['shp', 'tab', 'mif', 'vrt', 'dgn', 'csv', 'kml', 'gmt']
+    # the list of supported vectors - these are normally supported by OGR
+    self.supported_vectors = ['shp', 'tab', 'mif', 'vrt', 'dgn', 'csv', 'kml', 'gmt', 'e00']
     # sort the raster and vector extension lists
     self.supported_rasters.sort()
     self.supported_vectors.sort()
@@ -767,19 +767,41 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
   def help_about(self):
     about = AboutGeoApt()
+    # Set general info in the About tab
     about.textBrowser.setText("""<h2>GeoApt</h2>
                               Version %s""" % geoapt_version.VERSION)
-    about.textBrowser.append("Theme database: %s" % self.dbname)
-    about.textBrowser.append("""<h3>Supported Vector Formats</h3>
-                              <ul>
-                              <li>%s""" % "<li>".join(self.supported_vectors))
-    about.textBrowser.append("""<h3>Supported Raster Formats</h3>
+    about.textBrowser.append("GeoApt is a geospatial data browser and theme catalog written in Python using the QGIS libraries.")
+    about.textBrowser.append("<p>Copyright (C) 2010 Gary Sherman</p>")
+    about.textBrowser.append("<p>All code is licensed under the GNU GPL version 2.</p>")
+    about.textBrowser.append("Your theme database is located at: %s" % self.dbname)
+
+    # Set raster info in the Raster tab
+    about.textBrowser_raster.setText("""<h3>Supported Raster Formats</h3>
                              <ul>
                              <li>%s""" % "<li>".join(self.supported_rasters))
     if not have_osgeo: 
-        about.textBrowser.append("**The GDAL Python bindings were not found. The list of supported rasters has been set to a minimum.")
+        about.textBrowser_raster.append("""**The GDAL Python bindings were not found.
+        The list of supported rasters has been set to a minimum.""")
 
+    # Set vector info in the Vector tab
+    about.textBrowser_vector.setText("""<h3>Supported Vector Formats</h3>
+                              <ul>
+                              <li>%s""" % "<li>".join(self.supported_vectors))
+    # list the data providers
+    provider_instance = QgsProviderRegistry.instance()
+    
+    #about.textBrowser_vector.append("<b>Data Providers</b>: %s" % provider_instance.pluginList())
+    #vector_filters = provider_instance.fileVectorFilters()
+    #filter_array = vector_filters.split(';;')
+    #about.textBrowser_vector.append(provider_instance.fileVectorFilters())
+    #provider_list = provider_instance.providerList()
+    #about.textBrowser_vector.append("PROVIDERS")
+    #for p in provider_list:
+        #about.textBrowser_vector.append(p)
+
+    # show the about dialog
     about.exec_()
+
       #QMessageBox.information(self, QCoreApplication.translate("GeoApt", "About"), QCoreApplication.translate("GeoApt", "GeoApt Geospatial Data Browser") + geoapt_version.VERSION + "\n" + geoapt_version.COPYRIGHT + "\n" + geoapt_version.WEBSITE)
 
 
