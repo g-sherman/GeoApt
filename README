@@ -40,6 +40,18 @@ All code is licensed under the GNU GPL version 2.
     These settings assume your OSGeo4w install uses the default location. If
     not, adjust accordingly.
 
+**Contributing to GeoApt
+  We welcome contributions to the project. If you want to contribute to
+  GeoApt follow these steps:
+    1. If you don't have one already, create a GitHub account
+       (http://github.com)
+    2. Fork the GeoApt project (http://help.github.com/forking)
+    3. Clone a local working copy 
+    4. Make your changes and push to your forked repository
+    5. Send a pull request so your changes can be reviewed and committed into
+       the project (http://help.github.com/pull-requests)
+
+
 **Resources
   * Mailing list: http://groups.google.com/group/geoapt-browser
   * Download: http://geoapt.com/geoapt-data-browser
