@@ -9,6 +9,7 @@ from PyQt4.QtSql import *
 import pdb
 import sys
 import os
+import glob
 import sqlite3
 from add_theme_folder import *
 from add_theme import *
@@ -17,27 +18,33 @@ from about_geoapt import *
 import geoapt_version 
 # Environment variable QGISHOME must be set to the 1.0.x install directory
 # before running this application
-run_path = sys.argv[0]
-if sys.platform == 'darwin':
-    run_path = os.path.dirname(run_path)
-    qgis_prefix = os.path.join(os.path.dirname(run_path),'MacOS')
-else:
-    qgis_prefix = os.getenv("QGISHOME")
+qgis_prefix = os.getenv("QGISHOME")
 
 if qgis_prefix == None:
     print "QGISHOME environment variable not found, looking for QGIS on the PATH"
     # Try to locate the qgis directory
-    paths = os.environ['PATH'].split(os.pathsep)
-    for path in paths:
-        if os.path.exists(os.path.join(path, 'Qgis')) or os.path.exists(os.path.join(path, 'QGIS')):
-            # pop the last part of the path (presumably 'bin')
-            qgis_prefix = os.path.dirname(path)
-            # if on OS X (darwin), pop the Contents part of the path too
-            if sys.platform == 'darwin':
-                qgis_prefix = os.path.dirname(qgis_prefix)
-            print "It looks like the path to QGIS is: %s\n" % qgis_prefix
-            print "To start GeoApt, please use the run.sh script:\n"
-            print "  ./run.sh %s\n" % qgis_prefix
+    if sys.platform == 'darwin':
+        # look in the usual places
+        candidates = glob.glob('/Applications/Q[Gg][Ii][Ss]*.app')
+        if len(candidates) > 0:
+            # use the first match to run with
+            qgis_prefix = "%s/Contents/MacOS" % candidates[0]
+        else:
+            print """Please set the QGISHOME environment variable to the location of
+                  your QGIS application (for example /Applications/Qgis-1.6.app)"""
+            sys.exit(1)
+    else:
+        paths = os.environ['PATH'].split(os.pathsep)
+        for path in paths:
+            if os.path.exists(os.path.join(path, 'Qgis')) or os.path.exists(os.path.join(path, 'QGIS')):
+                # pop the last part of the path (presumably 'bin')
+                qgis_prefix = os.path.dirname(path)
+                # if on OS X (darwin), pop the Contents part of the path too
+                if sys.platform == 'darwin':
+                    qgis_prefix = os.path.dirname(qgis_prefix)
+                print "It looks like the path to QGIS is: %s\n" % qgis_prefix
+                print "To start GeoApt, please use the run.sh script:\n"
+                print "  ./run.sh %s\n" % qgis_prefix
     # exit after friendly message
     #sys.exit(1)
 
@@ -813,8 +820,13 @@ def main(argv):
 
   # Initialize qgis libraries
   QgsApplication.setPrefixPath(qgis_prefix, True)
+  print "Set PrefixPath to %s" % qgis_prefix
   #QgsApplication.setPrefixPath(app.applicationDirPath(), True)
   QgsApplication.initQgis()
+
+  provider_inst = QgsProviderRegistry.instance()
+  print provider_inst.pluginList()
+  print QgsApplication.showSettings()
 
   # create main window
   wnd = MainWindow()

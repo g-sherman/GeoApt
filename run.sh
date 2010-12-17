@@ -20,6 +20,7 @@ then
       echo "Hint: On a Mac this will be something like /Applications/Qgis.app"
       echo "      If you have built using CMake you will have to adjust this script"
       echo "Hint: On Linux specify the directory containing bin/qgis. e.g. /usr or /usr/local"
+      exit
   else
       echo "Found QGIS at: $QGISPATH"
       # strip uneeded parts from the path
