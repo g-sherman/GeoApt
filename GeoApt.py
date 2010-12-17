@@ -10,6 +10,7 @@ import pdb
 import sys
 import os
 import glob
+import subprocess
 import sqlite3
 from add_theme_folder import *
 from add_theme import *
@@ -34,19 +35,17 @@ if qgis_prefix == None:
                   your QGIS application (for example /Applications/Qgis-1.6.app)"""
             sys.exit(1)
     else:
-        paths = os.environ['PATH'].split(os.pathsep)
-        for path in paths:
-            if os.path.exists(os.path.join(path, 'Qgis')) or os.path.exists(os.path.join(path, 'QGIS')):
-                # pop the last part of the path (presumably 'bin')
-                qgis_prefix = os.path.dirname(path)
-                # if on OS X (darwin), pop the Contents part of the path too
-                if sys.platform == 'darwin':
-                    qgis_prefix = os.path.dirname(qgis_prefix)
-                print "It looks like the path to QGIS is: %s\n" % qgis_prefix
-                print "To start GeoApt, please use the run.sh script:\n"
-                print "  ./run.sh %s\n" % qgis_prefix
-    # exit after friendly message
-    #sys.exit(1)
+        qgis_path = subprocess.Popen(['which', 'qgis'], stdout=subprocess.PIPE).communicate()[0]
+        if qgis_path != '':
+            parts = qgis_path.split('/')
+            qgis_prefix = "/".join(parts[0:parts.index('bin')])
+            print "It looks like the path to QGIS is: %s\n" % qgis_prefix
+        else:
+            # exit after friendly message
+            print """Please set the QGISHOME environment variable to the location of
+                  your QGIS application. For example, if the qgis binary is in 
+                  /usr/bin/qgis, set QGISHOME to /usr (export QGISHOME=/usr)."""
+            sys.exit(1)
 
 # qgis_prefix is set - finish imports
 try:
