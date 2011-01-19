@@ -28,9 +28,9 @@ Qt requirements.
 
 Downloads
 ---------
-  There are binaries of version 1.3 available for Windows and Mac OS X.
-  This version was released in March 2010. See the Resources section for
-  the URL to download.
+There are binaries of version 1.3 available for Windows and Mac OS X.
+This version was released in March 2010. See the Resources section for
+the URL to download.
 
 Running GEOAPT Spatial Data Browser
 -----------------------------------
@@ -43,27 +43,27 @@ The development version of GeoApt runs as a Python script.
 * Windows
   On Windows you must have the OSGeo4w install of QGIS. To run the browser
 
-      1. From the Start menu, open an OSGeo4w shell
-      2. Set the environment by issuing the following commands
-         set PATH=%PATH%;c:\osgeo4w\apps\qgis-unstable\bin
-         set PYTHONPATH=%PYTHONPATH%;c:\osgeo4w\apps\qgis-unstable\python
-         set QGISHOME=c:\osgeo4w\apps\qgis-unstable        
+1. From the Start menu, open an OSGeo4w shell
+2. Set the environment by issuing the following commands
+   set PATH=%PATH%;c:\osgeo4w\apps\qgis-unstable\bin
+   set PYTHONPATH=%PYTHONPATH%;c:\osgeo4w\apps\qgis-unstable\python
+   set QGISHOME=c:\osgeo4w\apps\qgis-unstable        
 
-    These settings assume your OSGeo4w install uses the default location. If
-    not, adjust accordingly.
+These settings assume your OSGeo4w install uses the default location. If
+not, adjust accordingly.
 
 Contributing to GeoApt
 ----------------------
-  We welcome contributions to the project. If you want to contribute to
-  GeoApt follow these steps:
+We welcome contributions to the project. If you want to contribute to
+GeoApt follow these steps:
 
-    1. If you don't have one already, create a GitHub account
-       (http://github.com)
-    2. Fork the GeoApt project (http://help.github.com/forking)
-    3. Clone a local working copy 
-    4. Make your changes and push to your forked repository
-    5. Send a pull request so your changes can be reviewed and committed into
-       the project (http://help.github.com/pull-requests)
+1. If you don't have one already, create a GitHub account
+   (http://github.com)
+2. Fork the GeoApt project (http://help.github.com/forking)
+3. Clone a local working copy 
+4. Make your changes and push to your forked repository
+5. Send a pull request so your changes can be reviewed and committed into
+   the project (http://help.github.com/pull-requests)
 
 
 Resources
