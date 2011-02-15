@@ -129,8 +129,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.treeview.setModel(self.model)
 
-
-        # hide the columns we don't want
+        # hide the size, type, and date modified columns 
+        self.treeview.hideColumn(1)
         self.treeview.hideColumn(2)
         self.treeview.hideColumn(3)
 
@@ -140,12 +140,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Create the map canvas
         self.canvas = QgsMapCanvas()
         self.canvas.enableAntiAliasing(True)
-        # Set the canvas background color to white
-        self.canvas.setCanvasColor(QColor(255,255,255))
+        self.canvas.setCanvasColor(QColor(255,255,255)) # white
         self.canvas.enableAntiAliasing(True)
         self.canvas.useImageToRender(True)
         self.canvas.setMinimumSize(400,400)
 
+        self.meta_tab = QTextBrowser()
+        self.r_tab_widget = QTabWidget()
+        self.r_tab_widget.addTab(self.canvas, QCoreApplication.translate("GeoApt", "Preview"))
+        self.r_tab_widget.addTab(self.meta_tab, QCoreApplication.translate("GeoApt", "Metadata"))
         self.tab_widget = QTabWidget()
         self.tab_widget.addTab(self.treeview, QCoreApplication.translate("GeoApt", "Directories"))
 
@@ -190,9 +193,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
         self.splitter.addWidget(self.tab_widget)
-
-
-        self.splitter.addWidget(self.canvas)
+        self.splitter.addWidget(self.r_tab_widget)
 
         # make the connections for the directory/file treeview
         self.connect(self.treeview, SIGNAL("doubleClicked(const QModelIndex&)"), self.showData)
@@ -216,10 +217,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_zoomfull = QAction(QIcon(":/qgisbrowser/mActionZoomFullExtent.png"),
             QCoreApplication.translate("GeoApt", "Zoom Full Extent"), self.frame)
         self.connect(self.action_zoomfull, SIGNAL("activated()"), self.zoomFull)
-
-        self.action_metadata = QAction(QIcon(":/qgisbrowser/mActionMetadata.png"),
-            QCoreApplication.translate("GeoApt", "Properties"), self.frame)
-        self.connect(self.action_metadata, SIGNAL("activated()"), self.metadata)
 
         self.action_open_folder = QAction(QIcon(":/qgisbrowser/mActionOpenFolder.png"),
             QCoreApplication.translate("GeoApt", "Open Folder"), self.frame)
@@ -256,7 +253,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.toolbar.addAction(self.action_zoomout)
         self.toolbar.addAction(self.action_pan)
         self.toolbar.addAction(self.action_zoomfull)
-        self.toolbar.addAction(self.action_metadata)
 
         # Create the map tools
         self.tool_pan = QgsMapToolPan(self.canvas)
@@ -448,9 +444,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 print "unsupported file type"
 
-        # update the metadata dock if it exists
-        if self.dockVisibility:
-            self.metadata()
+        # update the metadata tab
+        self.meta_tab.setHtml(self.metadata())
 
     def setTreeRoot(root):
         """Set the root of the file tree."""
@@ -477,25 +472,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         pass
 
     def metadata(self):
-        """Show the metadata for the active layer."""
+        """Retrieve the metadata for the active layer."""
         print "Layer type is: ", self.layer.type()
         print "dock viz is: ", self.dockVisibility
         if(self.layer.type() == QgsMapLayer.RasterLayer):
             metadata = self.layer.metadata()
         else:
             metadata = self.getVectorMetadata()
-        #print metadata
-        # create the metadata doc
-        dock = QDockWidget("Metadata for " + self.layer.name(), self)
-        # figure out where to put the floating dock
-        geometry = self.geometry()
-        dockLeft = geometry.left() + ((geometry.right() - geometry.left())/2 - 320/2)
-        dock.setGeometry(dockLeft, geometry.top()+22, 320, 400)
-
-        self.content = QTextEdit(metadata, dock)
-        dock.setWidget(self.content)
-        self.addDockWidget(Qt.RightDockWidgetArea, dock)
-        dock.setFloating(True)
+        return metadata
 
     def getVectorMetadata(self):
         """Generate the metadata for a vector layer."""
