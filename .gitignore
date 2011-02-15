@@ -1,4 +1,5 @@
 *.pyc
 *.swp
 *.swo
-.gitignore
+*_ui.py
+resources.py
