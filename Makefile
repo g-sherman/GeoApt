@@ -6,17 +6,16 @@ VERSION = 0.1.3
 #
 # Build UI files and resources
 UISOURCES = mainwindow_ui.py resources.py dlgAddThemeFolder_ui.py dlgAddTheme_ui.py dlgAboutGeoApt_ui.py
-SOURCES = GeoApt.py \
+PYSOURCES = GeoApt.py \
 					geoapt_version.py \
 					about_geoapt.py \
 					add_theme.py \
 					add_theme_folder.py \
 					theme.py \
 					theme_database.py \
-					theme_tree.py \
-					run.sh \
-					run.cmd \
-					README
+					theme_tree.py 
+
+EXTRAS = run.sh run.cmd README
 
 all: $(UISOURCES)
 
@@ -37,7 +36,7 @@ dist: all
 	rm -f geoapt_$(VERSION).zip
 	rm -rf ./geoapt_$(VERSION)
 	mkdir -p geoapt_$(VERSION)
-	cp $(SOURCES) geoapt_$(VERSION)
+	cp $(PYSOURCES) $(EXTRAS) geoapt_$(VERSION)
 	cp $(UISOURCES) geoapt_$(VERSION)
 	zip -9v geoapt_$(VERSION).zip geoapt_$(VERSION)/* 
 
@@ -52,3 +51,5 @@ dmg:
 	echo "Removing GeoApt_$(VERSION).dmg if it exists"
 	rm -f GeoApt_$(VERSION).dmg
 	hdiutil create -imagekey zlib-level=9 -srcfolder dist GeoApt_$(VERSION).dmg
+
+

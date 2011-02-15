@@ -1,13 +1,15 @@
-# Copyright (C) 2008-2010 Gary Sherman
+# Copyright (C) 2008-2011 Gary Sherman
 # Licensed under the terms of GNU GPL 2
 from theme import *
-# Schema for the theme database
 class ThemeDatabase:
+    """Schema for the theme database."""
+
     def __init__(self, db=None):
-      self.db = db
+        self.db = db
 
     @classmethod
     def create_schema(cls, db):
+        """Create the themes table in the theme database."""
         print "Creating schema in SQLITE3 database\n"
         cursor = db.cursor()
         cursor.execute("create table themes (id integer primary key autoincrement, name text, path text, parent_id int)")
@@ -15,6 +17,13 @@ class ThemeDatabase:
 
     @classmethod
     def add_folder(cls, db, folder, parent_id=0):
+        """Add a folder to the themes table.
+
+        The folder is created and the parent_id is set to that of its
+        parent. If it is a top-level folder, there is no parent and
+        parent_id is set to 0 (the default).
+
+        """
         print "Adding folder to database\n"
         cursor = db.cursor()
         cursor.execute("insert into themes (name, parent_id) values('%s', %i)" % (folder, parent_id))
@@ -23,6 +32,12 @@ class ThemeDatabase:
 
     @classmethod
     def add_theme(cls, db, theme_name, theme_path, parent_id):
+        """Add a theme to the database.
+
+        The name, path and parent_id are required to create a theme. Path
+        is the full path to the location of the theme on disk.
+
+        """
         print "Adding theme to database\n"
         cursor = db.cursor()
         cursor.execute("insert into themes (name, path, parent_id) values('%s','%s', %i)" % (theme_name, theme_path, parent_id))
@@ -31,7 +46,7 @@ class ThemeDatabase:
 
     @classmethod
     def folder_list(cls, db):
-        # create a list containing the theme folders
+        """Create a list containing the theme folders."""
         cursor = db.cursor()
         # get the list of theme folders (rows with parent_id = 0)
         cursor.execute("select id, name from themes where parent_id = 0 order by name")
@@ -43,7 +58,7 @@ class ThemeDatabase:
 
     @classmethod
     def theme_list(cls, db):
-        # create a dict containing the theme folder and its themes
+        """Create a dict containing the theme folder and its themes."""
         cursor = db.cursor()
         # get the list of theme folders (rows with parent_id = 0)
         cursor.execute("select id, name from themes where parent_id = 0 order by name")
@@ -59,9 +74,3 @@ class ThemeDatabase:
         theme_cursor.close()
         cursor.close()
         return theme_list
-
-
-
-            
-
-      
