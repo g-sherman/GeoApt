@@ -198,6 +198,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # make the connections for the directory/file treeview
         self.connect(self.treeview, SIGNAL("doubleClicked(const QModelIndex&)"), self.showData)
         self.connect(self.treeview, SIGNAL("clicked(const QModelIndex&)"), self.showData)
+        self.connect(self.treeview, SIGNAL("activated(QModelIndex)"), self.showData)
 
         # make the connections for the theme treeview
         self.theme_tree.setContextMenuPolicy(Qt.CustomContextMenu)
