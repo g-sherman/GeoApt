@@ -3,15 +3,11 @@
 # Copyright (C) 2008 Gary Sherman
 # Licensed under the GNU GPL Version 2
 
-# PyQt4 includes for python bindings to QT
+import sys
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-# General system includes
-import sys
-
-
-# Main entry to program.
 def main(argv):
 
   # create Qt application

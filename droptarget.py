@@ -2,16 +2,14 @@
 # A simple drop target app for testing drag and drop
 # Copyright (C) 2008 Gary Sherman 
 # Licensed under the terms of GNU GPL 2
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-#from qgis.core import *
-#from qgis.gui import *
 import sys
 import os
-# Import our GUI tree->setRootIndex(model->index(QDir::currentPath()));
+
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+
 from droptarget_ui import Ui_MainWindow
-# Import our resources (icons)
-import resources
+import resources # icons
 
 # Environment variable QGISHOME must be set to the 0.9 install directory
 # before running this application
