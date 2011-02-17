@@ -453,6 +453,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 print "unsupported file type"
 
+        self.canvas.setMapTool(self.tool_pan)
         # update the metadata tab
         self.meta_tab.setHtml(self.metadata())
 
