@@ -226,17 +226,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         menu_bar = QMenuBar()
         self.menu = self.setMenuBar(menu_bar)
 
-        menu_file = menu_bar.addMenu(QCoreApplication.translate("GeoApt", "File"))
+        menu_file = menu_bar.addMenu(QCoreApplication.translate("GeoApt", "&File"))
         exit_action = QAction(QCoreApplication.translate("GeoApt", "Exit"), self)
         self.connect(exit_action, SIGNAL("triggered()"), self.exit_gndb)
         menu_file.addAction(exit_action)
 
-        menu_theme = menu_bar.addMenu(QCoreApplication.translate("GeoApt", "Theme"))
+        menu_theme = menu_bar.addMenu(QCoreApplication.translate("GeoApt", "&Theme"))
         theme_new_folder_action = QAction(QCoreApplication.translate("GeoApt", "Add new folder..."), self)
         self.connect(theme_new_folder_action, SIGNAL("triggered()"), self.new_theme_folder)
         menu_theme.addAction(theme_new_folder_action)
 
-        menu_help = menu_bar.addMenu(QCoreApplication.translate("GeoApt", "Help"))
+        menu_help = menu_bar.addMenu(QCoreApplication.translate("GeoApt", "&Help"))
         help_about_action = QAction(QCoreApplication.translate("GeoApt", "About GeoApt"), self)
         self.connect(help_about_action, SIGNAL("triggered()"), self.help_about)
         menu_help.addAction(help_about_action)
@@ -296,6 +296,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.show()
         self.init_database()
         self.restore_themes()
+
+        #####################################################################
+        ## Keyboard Bindings
+        #####################################################################
+        self.action_open_folder.setShortcut(QKeySequence("Ctrl+O"))
+        exit_action.setShortcut(QKeySequence("Ctrl+Q"))
+
 
         ## end __init__
 
