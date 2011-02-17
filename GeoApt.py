@@ -463,7 +463,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def openFolder(self):
         """Open an existing directory and set it to current."""
         folder = QFileDialog.getExistingDirectory()
-        self.setFolder(folder)
+        if folder:
+            self.setFolder(folder)
 
     def setFolder(self, folder):
         """Set the selected folder to current."""
