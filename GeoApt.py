@@ -229,6 +229,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         menu_file = menu_bar.addMenu(QCoreApplication.translate("GeoApt", "&File"))
         exit_action = QAction(QCoreApplication.translate("GeoApt", "Exit"), self)
         self.connect(exit_action, SIGNAL("triggered()"), self.exit_gndb)
+        menu_file.addAction(self.action_open_folder)
         menu_file.addAction(exit_action)
 
         menu_theme = menu_bar.addMenu(QCoreApplication.translate("GeoApt", "&Theme"))
