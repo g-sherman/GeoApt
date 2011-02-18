@@ -2,7 +2,7 @@
 # Sample directory view 
 # Copyright (C) 2008 Gary Sherman
 # Licensed under the GNU GPL Version 2
-
+"""Minimal example of directory tree display"""
 # PyQt4 includes for python bindings to QT
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
