@@ -2,6 +2,7 @@
 # Licensed under the terms of GNU GPL 2
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+
 class ThemeTree(QTreeWidget):
     """Subclassed QTreeWidget to provide drag and drop."""
     def __init__(self):

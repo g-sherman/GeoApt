@@ -3,6 +3,7 @@
 # Licensed under the terms of GNU GPL 2
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+
 class QgsTreeView(QTreeView):
     """TreeView class for GeoApt."""
     def __init__(self):

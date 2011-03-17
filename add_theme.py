@@ -2,7 +2,9 @@
 # Licensed under the terms of GNU GPL 2
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+
 from dlgAddTheme_ui import Ui_dlgAddTheme
+
 class AddTheme(QDialog, Ui_dlgAddTheme):
     """UI driver for the AddTheme dialog."""
     def __init__(self, parent=None):

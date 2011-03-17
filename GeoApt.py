@@ -7,20 +7,23 @@
 # 2008-03-11 added to git
 #
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtSql import *
 import pdb
 import sys
 import os
 import glob
 import subprocess
 import sqlite3
+
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+from PyQt4.QtSql import *
+
 from add_theme_folder import *
 from add_theme import *
 from theme_tree import *
 from about_geoapt import *
 import geoapt_version
+
 # Environment variable QGISHOME must be set to the 1.0.x install directory
 # before running this application
 qgis_prefix = os.getenv("QGISHOME")

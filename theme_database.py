@@ -1,6 +1,7 @@
 # Copyright (C) 2008-2011 Gary Sherman
 # Licensed under the terms of GNU GPL 2
 from theme import *
+
 class ThemeDatabase:
     """Schema for the theme database."""
 
